@@ -1,0 +1,27 @@
+{
+  "name": "mariyai",
+  "version": "0.1.0",
+  "description": "The City Pop twitch bot and counterpart to botsuro",
+  "main": "dist/main.js",
+  "scripts": {
+    "test": "test",
+    "dev": "nodemon",
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/colors": "^1.2.1",
+    "@types/node": "^20.1.1",
+    "@types/tmi.js": "^1.8.3",
+    "@types/winston": "^2.4.4",
+    "nodemon": "^2.0.22",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "colors": "^1.4.0",
+    "dotenv": "^16.0.3",
+    "tmi.js": "^1.8.5",
+    "winston": "^3.8.2"
+  }
+}
