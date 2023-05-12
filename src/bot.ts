@@ -102,4 +102,16 @@ class Bot {
   }
 }
 
-export default Bot;
+let bot: Bot | null = null;
+
+/**
+ * Get or create the bot singleton to use across the app
+ * @returns {Bot}
+ */
+export function getBotInstance() {
+  if (!bot) {
+    bot = new Bot();
+  }
+
+  return bot;
+}

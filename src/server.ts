@@ -2,14 +2,14 @@ import express from "express";
 import enableWs from "express-ws";
 
 import { getLogger } from "./logger";
-import Bot from "./bot";
+import { getBotInstance } from "./bot";
 
 const logger = getLogger("server");
 
 const _app = express();
 const app = enableWs(_app).app;
 
-const bot = new Bot();
+const bot = getBotInstance();
 
 enum Action {
   FirstLoad = "FIRST_LOAD",
