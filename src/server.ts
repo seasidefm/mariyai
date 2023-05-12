@@ -3,6 +3,7 @@ import enableWs from "express-ws";
 
 import { getLogger } from "./logger";
 import { getBotInstance } from "./bot";
+import { actionHandler } from "./actions/actionHandler";
 
 const logger = getLogger("server");
 
@@ -11,60 +12,13 @@ const app = enableWs(_app).app;
 
 const bot = getBotInstance();
 
-enum Action {
-  FirstLoad = "FIRST_LOAD",
-  GetState = "GET_STATE",
-}
-
-type Payload =
-  | {
-      action: Action.FirstLoad;
-      data: {
-        clientName: string;
-      };
-    }
-  | {
-      action: Action.GetState;
-    };
-
 // This generally only runs one time, when a socket connects the first time.
 app.ws("/game", async (_ws, req) => {
   logger.info("New client connected");
 
   // Websocket messages are stateful
-  _ws.on("message", (msg) => {
-    try {
-      logger.info("Received message: " + msg);
-      const data: Payload = JSON.parse(msg.toString());
-
-      // TODO: Extract this to a separate function
-      switch (data.action) {
-        case Action.FirstLoad: {
-          bot.addSocket(data.data.clientName, _ws as unknown as WebSocket);
-
-          break;
-        }
-
-        case Action.GetState: {
-          _ws.send(JSON.stringify({ state: "woohoo" }));
-          break;
-        }
-
-        default: {
-          const error = `Cannot find action in payload: ` + msg;
-          logger.error(error);
-
-          _ws.send(error);
-        }
-      }
-    } catch (e) {
-      logger.error(`Cannot parse JSON from msg: ${msg}`);
-      _ws.send(
-        JSON.stringify({
-          error: "Cannot parse JSON, please check payload",
-        })
-      );
-    }
+  _ws.on("message", async (msg) => {
+    await actionHandler(msg.toString(), _ws as unknown as WebSocket);
   });
 
   _ws.on("error", (err) => {
