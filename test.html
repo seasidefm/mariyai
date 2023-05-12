@@ -1,0 +1,94 @@
+<html>
+  <head>
+    <script>
+      // Websocket
+      let socket = null;
+
+      const payload = {
+        action: "FIRST_LOAD",
+        data: {
+          clientName: "HTML Client",
+        },
+      };
+
+      const payload2 = {
+        action: "GET_STATE",
+      };
+
+      function connect() {
+        const _socket = new WebSocket("ws://localhost:5000/game");
+
+        _socket.addEventListener("open", (event) => {
+          _socket.send(JSON.stringify(payload));
+        });
+
+        // Listen for messages
+        _socket.addEventListener("message", (event) => {
+          console.log("Message from server ", event.data);
+
+          handleMessage(event.data);
+        });
+
+        socket = _socket;
+      }
+
+      function sendMessage() {
+        socket.send(JSON.stringify(payload2));
+      }
+
+      function disconnect() {
+        if (socket) {
+          socket.close();
+          socket = null;
+        }
+      }
+
+      function handleMessage(msg) {
+        const newMsg = document.createElement("p");
+
+        newMsg.innerText = msg;
+
+        document.getElementById("messages").appendChild(newMsg);
+      }
+    </script>
+    <style>
+      h1 {
+        color: #fefefe;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        letter-spacing: 0.1rem;
+        background-color: #111;
+        padding: 4rem;
+      }
+
+      #messages {
+        margin-top: 2rem;
+        font-family: "Courier New", Courier, monospace;
+        background: #121;
+        padding: 2rem;
+        border-radius: 0.75rem;
+        width: 750px;
+        color: limegreen;
+      }
+
+      #messages > p {
+        margin: 0;
+        padding: 0;
+
+        margin-top: 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test websocket!</h1>
+    <button onclick="connect()">Connect</button>
+    <button onclick="sendMessage()">Send Message</button>
+    <button onclick="disconnect()">Disconnect</button>
+
+    <div id="messages">
+      <p>Messages from server:</p>
+    </div>
+  </body>
+</html>

@@ -8,19 +8,23 @@ const colorLogLevelMap: Record<string, colors.Color> = {
   ERROR: colors.red,
 };
 
-const logFormat = printf(({ level, message, timestamp }) => {
-  const upperCaseLevel = level.toUpperCase();
-  const levelWithColor = (colorLogLevelMap[upperCaseLevel] || colors.gray)(
-    upperCaseLevel + ":"
-  );
+export const getLogger = (loggerName = "") => {
+  const logFormat = printf(({ level, message, timestamp }) => {
+    const upperCaseLevel = level.toUpperCase();
+    const levelWithColor = (colorLogLevelMap[upperCaseLevel] || colors.gray)(
+      upperCaseLevel + ":"
+    );
 
-  return `${levelWithColor} ${colors.gray(timestamp)} ${message}`;
-});
+    return `${loggerName} ${levelWithColor} ${colors.gray(
+      timestamp
+    )} ${message}`;
+  });
 
-export const logger = createLogger({
-  format: combine(timestamp(), logFormat),
-  transports: [
-    new transports.Console(),
-    new transports.File({ filename: "logfile.log" }),
-  ],
-});
+  return createLogger({
+    format: combine(timestamp(), logFormat),
+    transports: [
+      new transports.Console(),
+      new transports.File({ filename: "logfile.log" }),
+    ],
+  });
+};
