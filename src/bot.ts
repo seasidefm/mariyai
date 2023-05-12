@@ -9,7 +9,7 @@ export const logger = getLogger("mariyai");
 
 config();
 
-class Bot {
+export class Bot {
   private options: tmi.Options;
   private client: tmi.Client | null = null;
   private channel: string = "duke_ferdinand";
@@ -37,7 +37,10 @@ class Bot {
   }
 
   public addSocket(name: string, sock: WebSocket) {
+    logger.info([name, sock]);
     this.sockets[name] = sock;
+
+    logger.info(JSON.stringify(this.sockets));
   }
 
   // Only call this once
@@ -54,16 +57,14 @@ class Bot {
       if (isSelf) return;
 
       const command = messageCommandParser(message);
-      const commandMap = commandMapGenerator();
+      const commandMap = commandMapGenerator(this);
 
       if (command && commandMap[command]) {
         logger.info(
           `${colors.blue(channel)} ${tags["display-name"]} - ${message}`
         );
 
-        logger.info(`user color: ${tags["color"]}`);
-
-        await commandMap[command](client, {
+        await commandMap[command]({
           currentChannel: channel,
           user: tags["display-name"] as string,
           message,
@@ -97,8 +98,18 @@ class Bot {
     await this.client?.disconnect();
   }
 
+  // Outbound messages
+  // =====================
   public async sendMessage(message: string) {
     this.client?.say(this.channel, message);
+  }
+
+  public sendToSockets(message: string) {
+    const sockets = Object.keys(this.sockets);
+
+    for (const socket of sockets) {
+      this.sockets[socket].send(message);
+    }
   }
 }
 

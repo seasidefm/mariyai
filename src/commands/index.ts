@@ -1,5 +1,5 @@
 import tmi from "tmi.js";
-import { logger } from "../bot";
+import { logger, type Bot } from "../bot";
 
 enum Command {
   Help = "!help",
@@ -13,15 +13,12 @@ MariyAI_Takeuchi commands:
 !run: make your duck run around in a circle
 `;
 
-export type CommandHandler<R = void> = (
-  client: tmi.Client,
-  args: {
-    currentChannel: string;
-    user: string;
-    message: string;
-    tags: tmi.ChatUserstate;
-  }
-) => Promise<R>;
+export type CommandHandler<R = void> = (args: {
+  currentChannel: string;
+  user: string;
+  message: string;
+  tags: tmi.ChatUserstate;
+}) => Promise<R>;
 
 export function messageCommandParser(message: string): Command | null {
   const regex = /^!(\w+)/; // Matches "!command"
@@ -38,16 +35,27 @@ export function messageCommandParser(message: string): Command | null {
   return null;
 }
 
-export function commandMapGenerator(includeModCommands = false) {
+export function commandMapGenerator(bot: Bot) {
   const commandMap: Record<Command, CommandHandler> = {
-    [Command.Help]: async (client, args) => {
-      client.say(args.currentChannel, helpMsg);
+    [Command.Help]: async () => {
+      await bot.sendMessage(helpMsg);
     },
-    [Command.Spawn]: async (client, args) => {
+    [Command.Spawn]: async (args) => {
       logger.info(
         `Spawning a duck with specs: ${args.user}, ${args.tags["color"]}`
       );
-      client.say(args.currentChannel, "Spawning duck!");
+
+      await bot.sendMessage("Spawning duck!");
+
+      bot.sendToSockets(
+        JSON.stringify({
+          action: "SPAWN",
+          data: {
+            username: args.user,
+            color: args.tags["color"] || "#FEFEFE",
+          },
+        })
+      );
     },
   };
 
