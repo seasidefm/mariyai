@@ -10,11 +10,11 @@ export const logger = getLogger("mariyai");
 config();
 
 export class Bot {
-  private options: tmi.Options;
+  private readonly options: tmi.Options;
   private client: tmi.Client | null = null;
   private channel: string = "duke_ferdinand";
 
-  private sockets: {
+  private readonly sockets: {
     [key: string]: WebSocket;
   };
 
@@ -37,10 +37,7 @@ export class Bot {
   }
 
   public addSocket(name: string, sock: WebSocket) {
-    logger.info([name, sock]);
     this.sockets[name] = sock;
-
-    logger.info(JSON.stringify(this.sockets));
   }
 
   // Only call this once
@@ -63,6 +60,8 @@ export class Bot {
         logger.info(
           `${colors.blue(channel)} ${tags["display-name"]} - ${message}`
         );
+
+        console.log(tags)
 
         await commandMap[command]({
           currentChannel: channel,
