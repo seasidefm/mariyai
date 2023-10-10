@@ -7,16 +7,15 @@ import { actionHandler } from "./actions/actionHandler";
 
 const logger = getLogger("server");
 
+// Initialize express and enable websockets
 const _app = express();
 const app = enableWs(_app).app;
 
-const bot = getBotInstance();
+// Serve static files from the Godot WASM build
+app.use(express.static("public"));
 
-// function requestStatusLogger(req: express.Request, res: express.Response, next: express.NextFunction) {
-//   logger.info(`[${req.method}] ${req.originalUrl} - ${res.statusCode}`);
-// }
-//
-// app.use(requestStatusLogger);
+// Initialize the bot
+const bot = getBotInstance();
 
 // This generally only runs one time, when a socket connects the first time.
 app.ws("/game", async (_ws, req) => {
