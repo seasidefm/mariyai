@@ -45,11 +45,11 @@ Bun.serve({
             return new Response(file)
         }
 
-        // finally, return a 404
+        // finally, return a 404 if nothing else matches
         return new Response("Not found", {status: 404});
     },
     websocket: {
-        open(ws): void | Promise<void> {
+        open(_): void | Promise<void> {
             logger.info("New client connected");
         },
         async message(ws, message): Promise<void> {
@@ -60,11 +60,17 @@ Bun.serve({
         },
         close(ws, code, reason): void | Promise<void> {
             logger.info(
-                `WebSocket closed with code: ${code}, reason: ${reason.toString()}`
+                `[${ws.remoteAddress || 'address N/A'}] closed with code: ${code}, reason: ${reason.toString() || "Unknown"}`
             );
         },
-        drain(ws): void | Promise<void> {
+        drain(_): void | Promise<void> {
             logger.info("WebSocket drained");
         }
     }
 })
+
+// Websocket keepalive every once in a while to make NGINX happy (the default is 60 seconds I think)
+setInterval(() => {
+    logger.info("Calling bot pingSockets feature")
+    bot.pingSockets()
+}, 15_000)

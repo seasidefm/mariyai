@@ -112,6 +112,36 @@ export class Bot {
       this.sockets[socket].send(message);
     }
   }
+
+  public pingSockets() {
+    const sockets = Object.keys(this.sockets);
+
+    for (const socket of sockets) {
+      try {
+        const status = this.sockets[socket].send(JSON.stringify({
+          action: "PING",
+          data: {
+            timestamp: Date.now(),
+          }
+        }));
+
+        if (status == 0) {
+          logger.info(`Socket ${socket} is unavailable or closed, removing from list`);
+
+          this.sockets[socket].close();
+
+          delete this.sockets[socket];
+        } else if (status == -1) {
+          logger.info(`Socket ${socket} is just overloaded, don't remove from list`);
+        } else {
+          logger.info(`Socket ${socket} pinged with status ${status}`);
+        }
+      } catch (e) {
+        logger.error(`Error pinging/closing socket ${socket}: ${e}`);
+        delete this.sockets[socket];
+      }
+    }
+  }
 }
 
 let bot: Bot | null = null;
