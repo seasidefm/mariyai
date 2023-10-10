@@ -48,6 +48,20 @@ app.get("/health", (_, res) => {
   res.send("OK");
 });
 
+app.get("/spawn-test", (_, res) => {
+  bot.sendToSockets(
+    JSON.stringify({
+        action: "SPAWN",
+        data: {
+          username: "test",
+          color: "#222222",
+        },
+      })
+  );
+
+  res.send("OK");
+})
+
 const port = process.env.PORT || 5000;
 
 app.listen(port, async () => {
