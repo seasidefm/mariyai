@@ -63,9 +63,10 @@ app.get("/spawn-test", (_, res) => {
 })
 
 const port = process.env.PORT || 5000;
+const host = process.env.HOST || "localhost";
 
-app.listen(port, async () => {
-  logger.info("Express server listening on port " + port);
+app.listen(Number(port), host, async () => {
+  logger.info(`Server listening on ${host}:${port}!`);
 
   bot.createInstance();
 
