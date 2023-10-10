@@ -12,6 +12,7 @@ const BASE_PATH = "./public";
 const bot = getBotInstance();
 bot.createInstance();
 
+// @ts-ignore
 await bot.connect();
 
 Bun.serve({
