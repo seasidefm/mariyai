@@ -9,17 +9,18 @@ export const logger = getLogger("mariyai");
 
 config();
 
+const CHANNELS = process.env.CHANNELS?.split(",") || [];
+
 export class Bot {
   private readonly options: tmi.Options;
   private client: tmi.Client | null = null;
-  private channel: string = "duke_ferdinand";
 
   private readonly sockets: {
     [key: string]: WebSocket;
   };
 
   constructor() {
-    const channels = [this.channel];
+    const channels = CHANNELS;
 
     this.options = {
       connection: {
@@ -54,7 +55,7 @@ export class Bot {
       if (isSelf) return;
 
       const command = messageCommandParser(message);
-      const commandMap = commandMapGenerator(this);
+      const commandMap = commandMapGenerator(this, channel);
 
       if (command && commandMap[command]) {
         logger.info(
@@ -99,8 +100,8 @@ export class Bot {
 
   // Outbound messages
   // =====================
-  public async sendMessage(message: string) {
-    this.client?.say(this.channel, message);
+  public async sendMessage(channel: string, message: string) {
+    this.client?.say(channel, message);
   }
 
   public sendToSockets(message: string) {

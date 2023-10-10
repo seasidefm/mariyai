@@ -35,17 +35,17 @@ export function messageCommandParser(message: string): Command | null {
   return null;
 }
 
-export function commandMapGenerator(bot: Bot) {
+export function commandMapGenerator(bot: Bot, channel: string) {
   const commandMap: Record<Command, CommandHandler> = {
     [Command.Help]: async () => {
-      await bot.sendMessage(helpMsg);
+      await bot.sendMessage(channel, helpMsg);
     },
     [Command.Spawn]: async (args) => {
       logger.info(
         `Spawning a duck with specs: ${args.user}, ${args.tags["color"]}`
       );
 
-      await bot.sendMessage("Spawning duck!");
+      await bot.sendMessage(channel, `@${args.user} spawning a duck for you!`);
 
       bot.sendToSockets(
         JSON.stringify({
