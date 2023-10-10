@@ -4,6 +4,7 @@ import { config } from "dotenv";
 
 import { getLogger } from "./logger";
 import { commandMapGenerator, messageCommandParser } from "./commands";
+import {ServerWebSocket} from "bun";
 
 export const logger = getLogger("mariyai");
 
@@ -16,7 +17,7 @@ export class Bot {
   private client: tmi.Client | null = null;
 
   private readonly sockets: {
-    [key: string]: WebSocket;
+    [key: string]: ServerWebSocket;
   };
 
   constructor() {
@@ -37,7 +38,7 @@ export class Bot {
     this.sockets = {};
   }
 
-  public addSocket(name: string, sock: WebSocket) {
+  public addSocket(name: string, sock: ServerWebSocket) {
     this.sockets[name] = sock;
   }
 

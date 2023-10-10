@@ -1,5 +1,6 @@
 import { getBotInstance } from "../bot";
 import { getLogger } from "../logger";
+import {ServerWebSocket} from "bun";
 
 const logger = getLogger("server");
 const bot = getBotInstance();
@@ -20,14 +21,14 @@ type Payload =
       action: Action.GetState;
     };
 
-export async function actionHandler(msg: string, _ws: WebSocket) {
+export async function actionHandler(msg: string, _ws: ServerWebSocket<unknown>){
   try {
     logger.info("Received message: " + msg);
     const data: Payload = JSON.parse(msg.toString());
 
     switch (data.action) {
       case Action.FirstLoad: {
-        bot.addSocket(data.data.clientName, _ws as unknown as WebSocket);
+        bot.addSocket(data.data.clientName, _ws as ServerWebSocket);
 
         break;
       }
