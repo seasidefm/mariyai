@@ -5,12 +5,18 @@ import {ServerWebSocket} from "bun";
 const logger = getLogger("server");
 const bot = getBotInstance();
 
-enum Action {
+export enum Action {
   FirstLoad = "FIRST_LOAD",
+  Ping = "PING",
+  Pong = "PONG",
+
+  // Duck state
   GetState = "GET_STATE",
+  Spawn = "SPAWN",
+  Run = "RUN",
 }
 
-type Payload =
+export type Payload =
   | {
       action: Action.FirstLoad;
       data: {
@@ -18,12 +24,36 @@ type Payload =
       };
     }
   | {
+      action: Action.Ping;
+      data: {
+        timestamp: number;
+      }
+    }
+  | {
+      action: Action.Pong;
+      data: {
+        timestamp: number;
+      }
+    }
+  | {
       action: Action.GetState;
-    };
+    }
+  | {
+      action: Action.Spawn;
+      data: {
+        username: string;
+        color: string;
+      }
+  }
+  | {
+      action: Action.Run;
+      data: {
+        username: string;
+      }
+  };
 
 export async function actionHandler(msg: string, _ws: ServerWebSocket<unknown>){
   try {
-    logger.info("Received message: " + msg);
     const data: Payload = JSON.parse(msg.toString());
 
     switch (data.action) {

@@ -5,6 +5,7 @@ import { config } from "dotenv";
 import { getLogger } from "./logger";
 import { commandMapGenerator, messageCommandParser } from "./commands";
 import {ServerWebSocket} from "bun";
+import {Payload} from "./actions/actionHandler";
 
 export const logger = getLogger("mariyai");
 
@@ -105,11 +106,12 @@ export class Bot {
     this.client?.say(channel, message);
   }
 
-  public sendToSockets(message: string) {
+  public sendToSockets(message: Payload) {
     const sockets = Object.keys(this.sockets);
+    console.log(sockets)
 
     for (const socket of sockets) {
-      this.sockets[socket].send(message);
+      this.sockets[socket].send(JSON.stringify(message));
     }
   }
 

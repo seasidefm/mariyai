@@ -1,5 +1,6 @@
 import tmi from "tmi.js";
-import { logger, type Bot } from "../bot";
+import {type Bot, logger} from "../bot";
+import {Action} from "../actions/actionHandler";
 
 enum Command {
   Help = "!help",
@@ -47,15 +48,13 @@ export function commandMapGenerator(bot: Bot, channel: string) {
 
       await bot.sendMessage(channel, `@${args.user} spawning a duck for you!`);
 
-      bot.sendToSockets(
-        JSON.stringify({
-          action: "SPAWN",
+      bot.sendToSockets({
+          action: Action.Spawn,
           data: {
             username: args.user,
             color: args.tags["color"] || "#FEFEFE",
           },
-        })
-      );
+        });
     },
   };
 
