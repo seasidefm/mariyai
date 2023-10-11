@@ -43,6 +43,7 @@ export type Payload =
       data: {
         username: string;
         color: string;
+        scale: number; // default 1
       }
   }
   | {
