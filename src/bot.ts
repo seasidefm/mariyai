@@ -1,11 +1,13 @@
 import tmi from "tmi.js";
 import colors from "colors";
-import { config } from "dotenv";
+import {config} from "dotenv";
 
-import { getLogger } from "./logger";
-import { commandMapGenerator, messageCommandParser } from "./commands";
+import {getLogger} from "./logger";
+import {commandMapGenerator, messageCommandParser} from "./commands";
 import {ServerWebSocket} from "bun";
-import {Payload} from "./actions/actionHandler";
+import {Action, Payload} from "./actions/actionHandler";
+import {onGiftSubEvent} from "./eventHandlers/onGiftSub.ts";
+import {getCache} from "./state/memoryCache.ts";
 
 export const logger = getLogger("mariyai");
 
@@ -40,7 +42,12 @@ export class Bot {
   }
 
   public addSocket(name: string, sock: ServerWebSocket) {
-    this.sockets[name] = sock;
+    if (this.sockets[name]) {
+      logger.warn(`Socket ${name} already exists, adding +1 to name`);
+      this.addSocket(name + "+1", sock);
+    } else {
+      this.sockets[name] = sock;
+    }
   }
 
   // Only call this once
@@ -53,6 +60,10 @@ export class Bot {
       logger.info("MariyAI_Takeuchi connected to twitch");
     });
 
+    client.on("subgift", (s) => {
+
+    })
+
     client.on("message", async (channel, tags, message, isSelf) => {
       if (isSelf) return;
 
@@ -64,9 +75,8 @@ export class Bot {
           `${colors.blue(channel)} ${tags["display-name"]} - ${message}`
         );
 
-        console.log(tags)
-
         await commandMap[command]({
+          client,
           currentChannel: channel,
           user: tags["display-name"] as string,
           message,
@@ -74,6 +84,17 @@ export class Bot {
         });
       }
     });
+
+    // Register event handlers
+    onGiftSubEvent(client, (username, scale) => {
+      this.sendToSockets({
+        action: Action.SetDuckSize,
+        data: {
+          username,
+          scale,
+        },
+      });
+    })
 
     this.client = client;
   }
@@ -112,6 +133,22 @@ export class Bot {
 
     for (const socket of sockets) {
       this.sockets[socket].send(JSON.stringify(message));
+    }
+  }
+
+  public async updateDuckState() {
+    const cache = await getCache()
+
+    const duckState = await cache.get("SeasideFM")
+
+    if (duckState) {
+      this.sendToSockets({
+        action: Action.SetDuckSize,
+        data: {
+          username: "SeasideFM",
+          scale: JSON.parse(duckState).scale
+        }
+      })
     }
   }
 

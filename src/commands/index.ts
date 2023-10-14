@@ -1,10 +1,17 @@
 import tmi from "tmi.js";
 import {type Bot, logger} from "../bot";
 import {Action} from "../actions/actionHandler";
+import {testGiftMessage, testGiftPackMessage} from "../eventHandlers/testEvents.ts";
+import {getCache} from "../state/memoryCache.ts";
+import {DefaultUserState, UserDuckState} from "../state/stateTypes.ts";
 
 enum Command {
   Help = "!help",
   Spawn = "!spawn",
+
+  TestGift = ">test gift",
+  TestGiftPack = ">test giftpack",
+  // TestSubscription = ">test sub"
 }
 
 const helpMsg = `
@@ -15,6 +22,7 @@ MariyAI_Takeuchi commands:
 `;
 
 export type CommandHandler<R = void> = (args: {
+  client: tmi.Client;
   currentChannel: string;
   user: string;
   message: string;
@@ -22,7 +30,7 @@ export type CommandHandler<R = void> = (args: {
 }) => Promise<R>;
 
 export function messageCommandParser(message: string): Command | null {
-  const regex = /^!(\w+)/; // Matches "!command"
+  const regex = /^([!>])(\w+)(?:\s+(\w+))?$/; // Matches "!command" or ">command" or ">command secondWord"
 
   const match = message.match(regex);
   if (match) {
@@ -36,27 +44,45 @@ export function messageCommandParser(message: string): Command | null {
   return null;
 }
 
-export function commandMapGenerator(bot: Bot, channel: string) {
-  const commandMap: Record<Command, CommandHandler> = {
+export function commandMapGenerator(bot: Bot, channel: string): Record<Command, CommandHandler> {
+  return {
     [Command.Help]: async () => {
       await bot.sendMessage(channel, helpMsg);
     },
     [Command.Spawn]: async (args) => {
+      const cache = await getCache();
       logger.info(
         `Spawning a duck with specs: ${args.user}, ${args.tags["color"]}`
       );
 
       await bot.sendMessage(channel, `@${args.user} spawning a duck for you!`);
 
+      const username = args.user;
+      let userState: UserDuckState =  DefaultUserState;
+
+      const cached = await cache.get(username)
+      if (cached) {
+        userState = JSON.parse(cached);
+      }
+
       bot.sendToSockets({
-          action: Action.Spawn,
-          data: {
-            username: args.user,
-            color: args.tags["color"] || "#FEFEFE",
-          },
-        });
+        action: Action.Spawn,
+        data: {
+          username: args.user,
+          color: args.tags["color"] || "#FEFEFE",
+          scale: userState.scale
+        },
+      });
+    },
+
+    [Command.TestGift]: async (args) => {
+      logger.info("Emitting fake 'subgift' event")
+      testGiftMessage(args.client)
+    },
+
+    [Command.TestGiftPack]: async (args) => {
+      logger.info("Emitting fake 'gift pack' event")
+      testGiftPackMessage(args.client)
     },
   };
-
-  return commandMap;
 }
