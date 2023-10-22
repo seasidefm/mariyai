@@ -1,11 +1,11 @@
 import {Client} from "tmi.js";
 
-export const testGiftMessage = (client: Client) => {
+export const testGiftMessage = (client: Client, user: string) => {
 	// @ts-ignore
 	client.emit(
 		"subgift",
 		"duke_ferdinand",
-		"seasidefm",
+		user,
 		2,
 		"abearygoodbot",
 		{plan: "2000", planName: "Tier 2", prime: false},

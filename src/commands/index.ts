@@ -49,6 +49,7 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
     [Command.Help]: async () => {
       await bot.sendMessage(channel, helpMsg);
     },
+
     [Command.Spawn]: async (args) => {
       const cache = await getCache();
       logger.info(
@@ -77,7 +78,7 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
 
     [Command.TestGift]: async (args) => {
       logger.info("Emitting fake 'subgift' event")
-      testGiftMessage(args.client)
+      testGiftMessage(args.client, args.user)
     },
 
     [Command.TestGiftPack]: async (args) => {
