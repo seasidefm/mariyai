@@ -19,7 +19,7 @@ await bot.connect();
 const workerQueue = bot.getQueue()
 const cache = await getCache();
 
-workerQueue.process(async (job) => {
+workerQueue.process(async (job, done) => {
     console.log("Processing job: " + job.id)
     console.log(job.data)
     if (job.data.action === "GIFT_SUB") {
@@ -38,6 +38,8 @@ workerQueue.process(async (job) => {
         	scale: state.scale + (0.2 * normalizedGiftWeight)
         }
 
+        console.log("Setting state to: " + JSON.stringify(state))
+
         // update state in redis
         await cache.set(username, JSON.stringify(state))
 
@@ -48,8 +50,16 @@ workerQueue.process(async (job) => {
                 scale: state.scale
             }
         })
+
+        done()
     }
 })
+
+logger.info("Waiting for queue to start up...")
+
+await bot.getQueue().isReady()
+
+logger.info("Queue is ready! Starting bun server...")
 
 Bun.serve({
     port: process.env.PORT || 5523,
