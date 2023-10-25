@@ -60,7 +60,9 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
       // await bot.sendMessage(channel, `@${args.user} spawning a duck for you!`);
 
       const username = args.user;
-      let userState: UserDuckState =  DefaultUserState;
+      let userState: UserDuckState = username === "SeasideFM" ? {
+        scale: 5
+      } : DefaultUserState;
 
       const cached = await cache.get(username)
       if (cached) {
