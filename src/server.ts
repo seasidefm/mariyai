@@ -88,7 +88,8 @@ Bun.serve({
         const file = Bun.file(filePath);
 
         if (await file.exists()) {
-            return new Response(await file.arrayBuffer())
+            // @ts-ignore
+            return new Response(file)
         }
 
         // finally, return a 404 if nothing else matches
