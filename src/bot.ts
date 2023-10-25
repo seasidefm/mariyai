@@ -8,6 +8,7 @@ import {ServerWebSocket} from "bun";
 import {Action, Payload} from "./actions/actionHandler";
 import {onGiftSubEvent} from "./eventHandlers/onGiftSub.ts";
 import {getCache} from "./state/memoryCache.ts";
+import BeeQueue from "bee-queue";
 
 export const logger = getLogger("mariyai");
 
@@ -18,6 +19,9 @@ const CHANNELS = process.env.CHANNELS?.split(",") || [];
 export class Bot {
   private readonly options: tmi.Options;
   private client: tmi.Client | null = null;
+  private jobQueue = new BeeQueue("mariyai", {
+    redis: process.env.REDIS_URL
+  })
 
   private readonly sockets: {
     [key: string]: ServerWebSocket;
@@ -86,14 +90,22 @@ export class Bot {
     });
 
     // Register event handlers
-    onGiftSubEvent(client, (username, scale) => {
-      this.sendToSockets({
-        action: Action.SetDuckSize,
-        data: {
-          username,
-          scale,
-        },
-      });
+    onGiftSubEvent(client, async (username, normalizedGiftWeight) => {
+      const queue = this.getQueue()
+
+      await queue.createJob({
+        action: "GIFT_SUB",
+        username,
+        normalizedGiftWeight
+      }).save()
+
+      // this.sendToSockets({
+      //   action: Action.SetDuckSize,
+      //   data: {
+      //     username,
+      //     scale,
+      //   },
+      // });
     })
 
     this.client = client;
@@ -150,6 +162,10 @@ export class Bot {
         }
       })
     }
+  }
+
+  public getQueue() {
+    return this.jobQueue;
   }
 
   public pingSockets() {

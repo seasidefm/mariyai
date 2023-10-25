@@ -1,6 +1,8 @@
-import {actionHandler} from "./actions/actionHandler";
+import {Action, actionHandler} from "./actions/actionHandler";
 import {getLogger} from "./logger";
 import {getBotInstance} from "./bot";
+import {getCache} from "./state/memoryCache.ts";
+import {DefaultUserState, UserDuckState} from "./state/stateTypes.ts";
 
 const logger = getLogger("ws-process");
 
@@ -13,6 +15,41 @@ const bot = getBotInstance();
 bot.createInstance();
 
 await bot.connect();
+
+const workerQueue = bot.getQueue()
+const cache = await getCache();
+
+workerQueue.process(async (job) => {
+    console.log("Processing job: " + job.id)
+    console.log(job.data)
+    if (job.data.action === "GIFT_SUB") {
+        const {username, normalizedGiftWeight} = job.data
+
+        const userState = await cache.get(username);
+
+        let state: UserDuckState = DefaultUserState
+        if (userState) {
+        	state = JSON.parse(userState)
+        }
+
+        state = {
+        	...state,
+        	// Scale by 0.2 per sub, increasing multiplier with sub tier/weight
+        	scale: state.scale + (0.2 * normalizedGiftWeight)
+        }
+
+        // update state in redis
+        await cache.set(username, JSON.stringify(state))
+
+        bot.sendToSockets({
+            action: Action.SetDuckSize,
+            data: {
+                username,
+                scale: state.scale
+            }
+        })
+    }
+})
 
 Bun.serve({
     port: process.env.PORT || 5523,

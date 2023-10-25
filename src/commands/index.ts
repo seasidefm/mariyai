@@ -8,6 +8,7 @@ import {DefaultUserState, UserDuckState} from "../state/stateTypes.ts";
 enum Command {
   Help = "!help",
   Spawn = "!spawn",
+  Run = "!run",
 
   TestGift = ">test gift",
   TestGiftPack = ">test giftpack",
@@ -56,7 +57,7 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
         `Spawning a duck with specs: ${args.user}, ${args.tags["color"]}`
       );
 
-      await bot.sendMessage(channel, `@${args.user} spawning a duck for you!`);
+      // await bot.sendMessage(channel, `@${args.user} spawning a duck for you!`);
 
       const username = args.user;
       let userState: UserDuckState =  DefaultUserState;
@@ -74,6 +75,17 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
           scale: userState.scale
         },
       });
+    },
+
+    [Command.Run]: async (args) => {
+      // await bot.sendMessage(channel, `ZOOOOM - Look at @${args.user} go!`);
+
+      bot.sendToSockets({
+        action: Action.Run,
+        data: {
+          username: args.user
+        }
+      })
     },
 
     [Command.TestGift]: async (args) => {

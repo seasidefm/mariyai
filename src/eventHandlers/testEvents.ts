@@ -8,7 +8,7 @@ export const testGiftMessage = (client: Client, user: string) => {
 		user,
 		2,
 		"abearygoodbot",
-		{plan: "2000", planName: "Tier 2", prime: false},
+		{plan: "1000", planName: "Tier 1", prime: false},
 		{ "display-name": "ABearyGoodBot" }
 	);
 };

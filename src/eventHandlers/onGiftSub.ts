@@ -1,7 +1,5 @@
 import {Client} from "tmi.js";
 import {getLogger} from "../logger.ts";
-import {getCache} from "../state/memoryCache.ts";
-import {DefaultUserState, UserDuckState} from "../state/stateTypes.ts";
 
 const logger = getLogger("gift-sub")
 
@@ -34,7 +32,7 @@ const SubWeightMap = {
   [SubWeight.Tier3]: 3
 }
 
-type OnEvent = (username: string, scale: number) => Promise<void> | void
+type OnEvent = (username: string, normalizedGiftWeight: number) => Promise<void> | void
 
 export const onGiftSubEvent = (client: Client, onEvent: OnEvent) => {
 	logger.info(
@@ -42,26 +40,8 @@ export const onGiftSubEvent = (client: Client, onEvent: OnEvent) => {
 	);
 
 	async function handleGiftEvent(username: string, count = 1, weight = 1) {
-		const cache = await getCache()
-
-		const userState = await cache.get(username)
-
-		let state: UserDuckState = DefaultUserState
-		if (userState) {
-			state = JSON.parse(userState)
-		}
-
-		state = {
-			...state,
-			// Scale by 0.2 per sub, increasing multiplier with sub tier/weight
-			scale: state.scale + ((count * 0.2) * weight)
-		}
-
-		// update state in redis
-		await cache.set(username, JSON.stringify(state))
-
 		// Surface event to listeners
-		onEvent(username, state.scale)
+		onEvent(username, count * weight)
 	}
 
 	client.on(
