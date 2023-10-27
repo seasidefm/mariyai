@@ -52,6 +52,14 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
     },
 
     [Command.Spawn]: async (args) => {
+      // check if user is subbed
+      const isSub = args.tags["subscriber"]
+
+      if (!isSub) {
+        logger.info(`User ${args.user} is not a sub, not spawning duck`)
+        return
+      }
+
       const cache = await getCache();
       logger.info(
         `Spawning a duck with specs: ${args.user}, ${args.tags["color"]}`
@@ -81,6 +89,13 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
 
     [Command.Run]: async (args) => {
       // await bot.sendMessage(channel, `ZOOOOM - Look at @${args.user} go!`);
+
+      const isSub = args.tags["subscriber"]
+
+      if (!isSub) {
+        logger.info(`User ${args.user} is not a sub, not spawning duck`)
+        return
+      }
 
       bot.sendToSockets({
         action: Action.Run,

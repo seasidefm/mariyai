@@ -41,7 +41,7 @@ workerQueue.process(async (job, done) => {
         console.log("Setting state to: " + JSON.stringify(state))
 
         // update state in redis
-        await cache.set(username, JSON.stringify(state))
+        await cache.set(username, JSON.stringify(state), 60 * 60 * 12)
 
         bot.sendToSockets({
             action: Action.SetDuckSize,

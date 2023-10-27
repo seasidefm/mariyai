@@ -32,8 +32,11 @@ export class MemoryCache {
     return this.client.get(key);
   }
 
-  public set(key: string, data: string): Promise<string | null> {
-    return this.client.set(key, data)
+  public set(key: string, data: string, defaultEx =  3600): Promise<string | null> {
+    return this.client.set(key, data, {
+      // Expire in 12 hours
+      "EX": defaultEx
+    })
   }
 }
 
