@@ -9,6 +9,7 @@ import {Action, Payload} from "./actions/actionHandler";
 import {onGiftSubEvent} from "./eventHandlers/onGiftSub.ts";
 import {getCache} from "./state/memoryCache.ts";
 import Queue from 'bull'
+import {matchStreamElementsTip} from "./tips/streamelements.ts";
 
 export const logger = getLogger("mariyai");
 
@@ -71,7 +72,25 @@ export class Bot {
 
       const command = messageCommandParser(message);
       const commandMap = commandMapGenerator(this, channel);
+      const streamElementsTipData = matchStreamElementsTip(
+        tags["display-name"] || '',
+        message
+      )
 
+      // Handle tips
+      if (streamElementsTipData) {
+        logger.info(`StreamElements tip detected: ${streamElementsTipData.username} tipped equivalent of ${streamElementsTipData.subEquivalency} subs`)
+
+        const queue = this.getQueue()
+
+        await queue.add({
+          action: "TIP",
+          username: streamElementsTipData.username,
+          normalizedGiftWeight: streamElementsTipData.subEquivalency
+        })
+      }
+
+      // Handle commands
       if (command && commandMap[command]) {
         logger.info(
           `${colors.blue(channel)} ${tags["display-name"]} - ${message}`

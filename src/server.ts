@@ -1,14 +1,14 @@
-import {Action, actionHandler} from "./actions/actionHandler";
+import {actionHandler} from "./actions/actionHandler";
 import {getLogger} from "./logger";
 import {getBotInstance} from "./bot";
-import {getCache} from "./state/memoryCache.ts";
-import {DefaultUserState, UserDuckState} from "./state/stateTypes.ts";
+import {setupWorkers} from "./workers.ts";
 
 const logger = getLogger("ws-process");
 
-logger.info("Starting bun websocket server...");
-
 const BASE_PATH = "./public";
+
+logger.info("Welcome to MariyAI Takeuchi! 🦆 This Twitch companion is powered");
+logger.info("by Bun 🐰 and also serves up the Duck Resort 🏝️  Godot WebGL build.")
 
 // Initialize the bot
 const bot = getBotInstance();
@@ -16,53 +16,17 @@ bot.createInstance();
 
 await bot.connect();
 
-const workerQueue = bot.getQueue()
-const cache = await getCache();
-
-workerQueue.process(async (job, done) => {
-    console.log("Processing job: " + job.id)
-    console.log(job.data)
-    if (job.data.action === "GIFT_SUB") {
-        const {username, normalizedGiftWeight} = job.data
-
-        const userState = await cache.get(username);
-
-        let state: UserDuckState = DefaultUserState
-        if (userState) {
-        	state = JSON.parse(userState)
-        }
-
-        state = {
-        	...state,
-        	// Scale by 0.2 per sub, increasing multiplier with sub tier/weight
-        	scale: state.scale + (0.2 * normalizedGiftWeight)
-        }
-
-        console.log("Setting state to: " + JSON.stringify(state))
-
-        // update state in redis
-        await cache.set(username, JSON.stringify(state), 60 * 60 * 12)
-
-        bot.sendToSockets({
-            action: Action.SetDuckSize,
-            data: {
-                username,
-                scale: state.scale
-            }
-        })
-
-        done()
-    }
-})
+// Initialize the worker queue
+await setupWorkers(bot)
 
 logger.info("Waiting for queue to start up...")
-
 await bot.getQueue().isReady()
 
-logger.info("Queue is ready! Starting bun server...")
+logger.info("✅ Queue is ready.")
 
+const port = process.env.PORT || 5523
 Bun.serve({
-    port: process.env.PORT || 5523,
+    port,
     async fetch(req, server) {
         const url = new URL(req.url);
 
@@ -117,7 +81,10 @@ Bun.serve({
 })
 
 // Websocket keepalive every once in a while to make NGINX happy (the default is 60 seconds I think)
+logger.info("Starting keepalive ping to sockets")
 setInterval(() => {
-    logger.info("Calling bot pingSockets feature")
+    logger.info("🔄 Sending keepalive ping to sockets")
     bot.pingSockets()
 }, 15_000)
+
+logger.info("🐰 Bun server started! Listening on http://localhost:" + port);

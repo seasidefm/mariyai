@@ -30,16 +30,12 @@ export type CommandHandler<R = void> = (args: {
   tags: tmi.ChatUserstate;
 }) => Promise<R>;
 
+const commands = Object.values(Command)
 export function messageCommandParser(message: string): Command | null {
-  const regex = /^([!>])(\w+)(?:\s+(\w+))?$/; // Matches "!command" or ">command" or ">command secondWord"
+  const command = commands.find((cmd) => message.startsWith(cmd));
 
-  const match = message.match(regex);
-  if (match) {
-    const command = match[0] as Command;
-
-    if (Object.values(Command).includes(command)) {
-      return command;
-    }
+  if (command) {
+    return command;
   }
 
   return null;
@@ -107,7 +103,31 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
 
     [Command.TestGift]: async (args) => {
       logger.info("Emitting fake 'subgift' event")
-      testGiftMessage(args.client, args.user)
+      logger.info('MESSAGE HERE ' + args.message)
+      const commandArgs = args.message.replace(Command.TestGift, '').trim().split(" ")
+
+      if (commandArgs.length > 0) {
+        logger.info(`Detected command arguments: ${commandArgs}`)
+        try {
+          const count = parseInt(commandArgs[0])
+
+          if (isNaN(count)) {
+            logger.error(`Invalid count argument: ${commandArgs[0]}`)
+            await bot.sendMessage(channel, `@${args.user} invalid count argument: ${commandArgs[0]}`)
+            return
+          }
+
+          for (const _ of Array(count).fill('')) {
+            testGiftMessage(args.client, args.user)
+          }
+
+        } catch (e) {
+          logger.error(`Error parsing command arguments: ${e}`)
+          logger.error("Is this actually someone calling with a number?")
+        }
+      } else {
+        testGiftMessage(args.client, args.user)
+      }
     },
 
     [Command.TestGiftPack]: async (args) => {
