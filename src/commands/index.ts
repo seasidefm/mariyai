@@ -8,6 +8,7 @@ import {getDefaultUserState} from "../utils/getDefaultUserState.ts";
 enum Command {
   Help = "!help",
   Spawn = "!spawn",
+  Jump = "!jump",
   Run = "!run",
 
   TestGift = ">test gift",
@@ -54,7 +55,7 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
       if (!isSub) {
         logger.info(`User ${args.user} is not a sub, not spawning duck`)
 
-        return await bot.sendMessage(channel, `Sorry @${args.user}, due to development time and effort, Duck Resort is subscriber only!`)
+        return await bot.sendMessage(channel, `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`)
       }
 
       const cache = await getCache();
@@ -94,6 +95,23 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
       await cache.set(username, JSON.stringify(userState), 60 * 60 * 12)
     },
 
+    [Command.Jump]: async (args) => {
+      const isSub = args.tags["subscriber"]
+
+      if (!isSub) {
+        logger.info(`User ${args.user} is not a sub, not spawning duck`)
+
+        return await bot.sendMessage(channel, `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`)
+      }
+
+      bot.sendToSockets({
+        action: Action.Jump,
+        data: {
+          username: args.user
+        }
+      })
+    },
+
     [Command.Run]: async (args) => {
       // await bot.sendMessage(channel, `ZOOOOM - Look at @${args.user} go!`);
 
@@ -101,7 +119,8 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
 
       if (!isSub) {
         logger.info(`User ${args.user} is not a sub, not spawning duck`)
-        return
+
+        return await bot.sendMessage(channel, `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`)
       }
 
       bot.sendToSockets({

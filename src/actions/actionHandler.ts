@@ -13,6 +13,7 @@ export enum Action {
   // Duck state
   GetState = "GET_STATE",
   Spawn = "SPAWN",
+  Jump = "JUMP",
   SetDuckSize = "SET_DUCK_SIZE",
   Run = "RUN",
 }
@@ -45,6 +46,12 @@ export type Payload =
         username: string;
         color: string;
         scale: number; // default 1
+      }
+  }
+  | {
+      action: Action.Jump;
+      data: {
+        username: string;
       }
   }
   | {
