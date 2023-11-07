@@ -21,21 +21,13 @@ export function subTierToInitialScale(subTier: number): number {
 }
 
 export function getDefaultUserState(username: string, badges?: {subscriber?: string}): UserDuckState {
-    return username === "SeasideFM" ? {
-        scale: 5
+    console.log(`${username} has badges: ${JSON.stringify(badges)}`)
+
+    return username === "SeasideFM" || username === "Duke_Ferdinand" ? {
+        scale: username === "SeasideFM" ? 5.0 : 2.5,
     } : {
         ...DefaultUserState,
         // Get subscriber tier
         scale: subTierToInitialScale(getSubTier(badges))
-    };
-}
-
-export function getDefaultUserStateWithSubTier(username: string, subTier: number): UserDuckState {
-    return username === "SeasideFM" ? {
-        scale: 5
-    } : {
-        ...DefaultUserState,
-        // Get subscriber tier
-        scale: subTierToInitialScale(subTier)
     };
 }

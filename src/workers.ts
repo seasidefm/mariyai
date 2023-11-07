@@ -3,11 +3,6 @@ import {DefaultUserState, UserDuckState} from "./state/stateTypes.ts";
 import {Action} from "./actions/actionHandler.ts";
 import type {Bot} from "./bot.ts";
 import {getLogger} from "./logger.ts";
-import {
-  getDefaultUserState,
-  getDefaultUserStateWithSubTier,
-  subTierToInitialScale
-} from "./utils/getDefaultUserState.ts";
 
 const logger = getLogger("workers");
 

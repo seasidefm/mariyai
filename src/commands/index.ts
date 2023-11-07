@@ -17,10 +17,11 @@ enum Command {
 }
 
 const helpMsg = `
-MariyAI_Takeuchi commands:
+MariyAI_Takeuchi commands (subs only):
 
-!spawn: spawn in a duck (subs only) |
-!run: make your duck run around in a circle
+!spawn: spawn in a duck |
+!run: make your duck run around |
+!jump: make your duck jump
 `;
 
 export type CommandHandler<R = void> = (args: {
@@ -73,11 +74,14 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
       if (cached) {
         const cachedState = JSON.parse(cached)
 
+        const calculatedScale = cachedState.scale < userState.scale ? userState.scale + (cachedState.scale > 1 ? cachedState.scale - 1 : 0) : cachedState.scale
+        logger.info(`User ${username} has cached state, setting scale to ${calculatedScale}`)
+
         userState = {
           ...cachedState,
           // Scale up if cached state is smaller than current state (means user is higher tier sub),
           // otherwise ignore since they'll be big enough
-          scale: cachedState.scale < userState.scale ? userState.scale + (cachedState.scale - 1) : cachedState.scale
+          scale: calculatedScale < 1 ? 1 : calculatedScale // one time the scale was 0, not sure why. this is a hacky fix
         }
       }
 
