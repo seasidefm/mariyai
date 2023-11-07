@@ -3,8 +3,20 @@ import {DefaultUserState, UserDuckState} from "./state/stateTypes.ts";
 import {Action} from "./actions/actionHandler.ts";
 import type {Bot} from "./bot.ts";
 import {getLogger} from "./logger.ts";
+import {
+  getDefaultUserState,
+  getDefaultUserStateWithSubTier,
+  subTierToInitialScale
+} from "./utils/getDefaultUserState.ts";
 
 const logger = getLogger("workers");
+
+interface JobData {
+    action: "GIFT_SUB" | "TIP"
+    username: string
+    normalizedGiftWeight: number
+    subscriptionTier: number
+}
 
 export async function setupWorkers(bot: Bot) {
   logger.info("Setting up workers...")
@@ -17,11 +29,14 @@ export async function setupWorkers(bot: Bot) {
       logger.debug("Job data: " + JSON.stringify(job.data))
 
       if (job.data.action === "GIFT_SUB" || job.data.action === "TIP") {
-          const {username, normalizedGiftWeight} = job.data
+          // NOTE: see if subscription tier is the gifter's tier or the gifted tier
+          const {username, normalizedGiftWeight, subscriptionTier} = job.data as JobData
 
           const userState = await cache.get(username);
 
           let state: UserDuckState = DefaultUserState
+
+          // User state already exists, assume defaults are set correctly
           if (userState) {
             state = JSON.parse(userState)
           }

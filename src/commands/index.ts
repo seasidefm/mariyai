@@ -3,7 +3,7 @@ import {type Bot, logger} from "../bot";
 import {Action} from "../actions/actionHandler";
 import {testGiftMessage, testGiftPackMessage} from "../eventHandlers/testEvents.ts";
 import {getCache} from "../state/memoryCache.ts";
-import {DefaultUserState, UserDuckState} from "../state/stateTypes.ts";
+import {getDefaultUserState} from "../utils/getDefaultUserState.ts";
 
 enum Command {
   Help = "!help",
@@ -53,7 +53,8 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
 
       if (!isSub) {
         logger.info(`User ${args.user} is not a sub, not spawning duck`)
-        return
+
+        return await bot.sendMessage(channel, `Sorry @${args.user}, due to development time and effort, Duck Resort is subscriber only!`)
       }
 
       const cache = await getCache();
@@ -64,13 +65,19 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
       // await bot.sendMessage(channel, `@${args.user} spawning a duck for you!`);
 
       const username = args.user;
-      let userState: UserDuckState = username === "SeasideFM" ? {
-        scale: 5
-      } : DefaultUserState;
+
+      let userState = getDefaultUserState(username, args.tags["badges"])
 
       const cached = await cache.get(username)
       if (cached) {
-        userState = JSON.parse(cached);
+        const cachedState = JSON.parse(cached)
+
+        userState = {
+          ...cachedState,
+          // Scale up if cached state is smaller than current state (means user is higher tier sub),
+          // otherwise ignore since they'll be big enough
+          scale: cachedState.scale < userState.scale ? userState.scale + (cachedState.scale - 1) : cachedState.scale
+        }
       }
 
       bot.sendToSockets({
@@ -81,6 +88,10 @@ export function commandMapGenerator(bot: Bot, channel: string): Record<Command, 
           scale: userState.scale
         },
       });
+
+
+      // update state in redis
+      await cache.set(username, JSON.stringify(userState), 60 * 60 * 12)
     },
 
     [Command.Run]: async (args) => {

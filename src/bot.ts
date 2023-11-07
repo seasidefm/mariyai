@@ -63,10 +63,6 @@ export class Bot {
       logger.info("MariyAI_Takeuchi connected to twitch");
     });
 
-    client.on("subgift", (s) => {
-
-    })
-
     client.on("message", async (channel, tags, message, isSelf) => {
       if (isSelf) return;
 
@@ -107,13 +103,14 @@ export class Bot {
     });
 
     // Register event handlers
-    onGiftSubEvent(client, async (username, normalizedGiftWeight) => {
+    onGiftSubEvent(client, async (username, normalizedGiftWeight, subscriptionTier) => {
       const queue = this.getQueue()
 
       await queue.add({
         action: "GIFT_SUB",
         username,
-        normalizedGiftWeight
+        normalizedGiftWeight,
+        subscriptionTier
       })
     })
 
@@ -150,9 +147,9 @@ export class Bot {
 
   public sendToSockets(message: Payload) {
     const sockets = Object.keys(this.sockets);
-    console.log(sockets)
 
     for (const socket of sockets) {
+      logger.info(`-> Sending message to socket ${socket}: ${JSON.stringify(message)}`);
       this.sockets[socket].send(JSON.stringify(message));
     }
   }
@@ -212,9 +209,8 @@ let bot: Bot | null = null;
 
 /**
  * Get or create the bot singleton to use across the app
- * @returns {Bot}
  */
-export function getBotInstance() {
+export function getBotInstance(): Bot {
   if (!bot) {
     bot = new Bot();
   }

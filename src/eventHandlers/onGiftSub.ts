@@ -1,5 +1,6 @@
 import {Client} from "tmi.js";
 import {getLogger} from "../logger.ts";
+import {getSubTier} from "../utils/getDefaultUserState.ts";
 
 const logger = getLogger("gift-sub")
 
@@ -32,14 +33,14 @@ const SubWeightMap = {
   [SubWeight.Tier3]: 3
 }
 
-type OnEvent = (username: string, normalizedGiftWeight: number) => Promise<void> | void
+type OnEvent = (username: string, normalizedGiftWeight: number, subscriptionTier?: number) => Promise<void> | void
 
 export const onGiftSubEvent = (client: Client, onEvent: OnEvent) => {
 	logger.info(
 		"Registering 'submysterygift' event handler (multiple gift subs)"
 	);
 
-	async function handleGiftEvent(username: string, count = 1, weight = 1) {
+	async function handleGiftEvent(username: string, count = 1, weight = 1, subscriptionTier?: number) {
 		// Surface event to listeners
 		onEvent(username, count * weight)
 	}
@@ -72,18 +73,19 @@ export const onGiftSubEvent = (client: Client, onEvent: OnEvent) => {
 			_streakMonths,
 			recipient,
 			subType,
-			_userState
+			userState
 		) => {
 			logger.info(
 				`#${channel}: ${username} just gifted a sub to ${recipient}`
 			);
       logger.info(`> Sub tier: ${SubWeightMap[subType.plan as SubWeight]}`)
+			logger.info(`> Sub badge: ${JSON.stringify(userState)}`)
 
-			// TODO: Debounce this
 			await handleGiftEvent(
 				username,
 				1,
-				SubWeightMap[mapValueToSubWeight(subType.plan || SubWeight.Normal)]
+				SubWeightMap[mapValueToSubWeight(subType.plan || SubWeight.Normal)],
+				getSubTier(userState.badges)
 			)
 		}
 	);
