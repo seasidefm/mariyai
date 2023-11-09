@@ -1,92 +1,107 @@
-import {Client} from "tmi.js";
-import {getLogger} from "../logger.ts";
-import {getSubTier} from "../utils/getDefaultUserState.ts";
+import { Client } from 'tmi.js'
+import { getLogger } from '../logger.ts'
+import { getSubTier } from '../utils/getDefaultUserState.ts'
 
-const logger = getLogger("gift-sub")
+const logger = getLogger('gift-sub')
 
 enum SubWeight {
-  Prime = "Prime",
-  Normal = "1000",
-  Tier2 = "2000",
-  Tier3 = "3000"
+    Prime = 'Prime',
+    Normal = '1000',
+    Tier2 = '2000',
+    Tier3 = '3000',
 }
 
 function mapValueToSubWeight(value: string): SubWeight {
-	switch (value) {
-		case "Prime":
-			return SubWeight.Prime
-		case "1000":
-			return SubWeight.Normal
-		case "2000":
-			return SubWeight.Tier2
-		case "3000":
-			return SubWeight.Tier3
-		default:
-			throw new Error(`Unknown sub weight: ${value}`)
-	}
+    switch (value) {
+        case 'Prime':
+            return SubWeight.Prime
+        case '1000':
+            return SubWeight.Normal
+        case '2000':
+            return SubWeight.Tier2
+        case '3000':
+            return SubWeight.Tier3
+        default:
+            throw new Error(`Unknown sub weight: ${value}`)
+    }
 }
 
 const SubWeightMap = {
-  [SubWeight.Prime]: 1,
-  [SubWeight.Normal]: 1,
-  [SubWeight.Tier2]: 2,
-  [SubWeight.Tier3]: 3
+    [SubWeight.Prime]: 1,
+    [SubWeight.Normal]: 1,
+    [SubWeight.Tier2]: 2,
+    [SubWeight.Tier3]: 3,
 }
 
-type OnEvent = (username: string, normalizedGiftWeight: number, subscriptionTier?: number) => Promise<void> | void
+type OnEvent = (
+    username: string,
+    normalizedGiftWeight: number,
+    subscriptionTier?: number,
+) => Promise<void> | void
 
 export const onGiftSubEvent = (client: Client, onEvent: OnEvent) => {
-	logger.info(
-		"Registering 'submysterygift' event handler (multiple gift subs)"
-	);
+    logger.info(
+        "Registering 'submysterygift' event handler (multiple gift subs)",
+    )
 
-	async function handleGiftEvent(username: string, count = 1, weight = 1, subscriptionTier?: number) {
-		// Surface event to listeners
-		onEvent(username, count * weight)
-	}
+    async function handleGiftEvent(
+        username: string,
+        count = 1,
+        weight = 1,
+        subscriptionTier?: number,
+    ) {
+        // Surface event to listeners
+        onEvent(username, count * weight)
+    }
 
-	client.on(
-		"submysterygift",
-		async (channel, username, subCount, subType, userState) => {
-      // logger.info(
-      //   `#${channel}: ${username} gifted ${subCount} to ${userState["display-name"]}`
-      // );
-      // logger.info(`> Sub tier: ${SubWeightMap[subType.plan as SubWeight]}`)
+    client.on(
+        'submysterygift',
+        async (channel, username, subCount, subType, userState) => {
+            // logger.info(
+            //   `#${channel}: ${username} gifted ${subCount} to ${userState["display-name"]}`
+            // );
+            // logger.info(`> Sub tier: ${SubWeightMap[subType.plan as SubWeight]}`)
 
-			logger.warn("This is not currently handled! Probably doesn't need to be?")
+            logger.warn(
+                "This is not currently handled! Probably doesn't need to be?",
+            )
 
-			// await handleGiftEvent(
-			// 	username,
-			// 	1,
-			// 	SubWeightMap[mapValueToSubWeight(subType.plan || SubWeight.Normal)]
-			// )
-		}
-	);
+            // await handleGiftEvent(
+            // 	username,
+            // 	1,
+            // 	SubWeightMap[mapValueToSubWeight(subType.plan || SubWeight.Normal)]
+            // )
+        },
+    )
 
-	logger.info("Registering 'subgift' event handler (single gift sub)");
+    logger.info("Registering 'subgift' event handler (single gift sub)")
 
-	client.on(
-		"subgift",
-		async (
-			channel,
-			username,
-			_streakMonths,
-			recipient,
-			subType,
-			userState
-		) => {
-			logger.info(
-				`#${channel}: ${username} just gifted a sub to ${recipient}`
-			);
-      logger.info(`> Sub tier: ${SubWeightMap[subType.plan as SubWeight]}`)
-			logger.info(`> Sub badge: ${JSON.stringify(userState)}`)
+    client.on(
+        'subgift',
+        async (
+            channel,
+            username,
+            _streakMonths,
+            recipient,
+            subType,
+            userState,
+        ) => {
+            logger.info(
+                `#${channel}: ${username} just gifted a sub to ${recipient}`,
+            )
+            logger.info(
+                `> Sub tier: ${SubWeightMap[subType.plan as SubWeight]}`,
+            )
+            logger.info(`> Sub badge: ${JSON.stringify(userState)}`)
 
-			await handleGiftEvent(
-				username,
-				1,
-				SubWeightMap[mapValueToSubWeight(subType.plan || SubWeight.Normal)],
-				getSubTier(userState.badges)
-			)
-		}
-	);
-};
+            await handleGiftEvent(
+                username,
+                1,
+                SubWeightMap[
+                    mapValueToSubWeight(subType.plan || SubWeight.Normal)
+                ],
+                getSubTier(userState.badges),
+            )
+        },
+    )
+}

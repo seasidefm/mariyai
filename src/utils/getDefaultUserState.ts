@@ -1,6 +1,6 @@
-import {DefaultUserState, UserDuckState} from "../state/stateTypes.ts";
+import { DefaultUserState, UserDuckState } from '../state/stateTypes.ts'
 
-export function getSubTier(badges?: {subscriber?: string}): number {
+export function getSubTier(badges?: { subscriber?: string }): number {
     // leading number should be the sub tier? this is the only way I can see to get the sub tier without using an api call on every spawn
     const subBadge = badges?.subscriber || '1001'
 
@@ -20,14 +20,19 @@ export function subTierToInitialScale(subTier: number): number {
     }
 }
 
-export function getDefaultUserState(username: string, badges?: {subscriber?: string}): UserDuckState {
+export function getDefaultUserState(
+    username: string,
+    badges?: { subscriber?: string },
+): UserDuckState {
     console.log(`${username} has badges: ${JSON.stringify(badges)}`)
 
-    return username === "SeasideFM" || username === "Duke_Ferdinand" ? {
-        scale: username === "SeasideFM" ? 5.0 : 2.5,
-    } : {
-        ...DefaultUserState,
-        // Get subscriber tier
-        scale: subTierToInitialScale(getSubTier(badges))
-    };
+    return username === 'SeasideFM' || username === 'Duke_Ferdinand'
+        ? {
+              scale: username === 'SeasideFM' ? 5.0 : 2.5,
+          }
+        : {
+              ...DefaultUserState,
+              // Get subscriber tier
+              scale: subTierToInitialScale(getSubTier(badges)),
+          }
 }
