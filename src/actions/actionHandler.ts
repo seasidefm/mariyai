@@ -46,6 +46,7 @@ export type Payload =
               username: string
               color: string
               scale: number // default 1
+              wideness: number // default 0
           }
       }
     | {
@@ -59,6 +60,7 @@ export type Payload =
           data: {
               username: string
               scale: number
+              wideness: number
           }
       }
     | {

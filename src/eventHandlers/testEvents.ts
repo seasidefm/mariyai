@@ -13,6 +13,15 @@ export const testGiftMessage = (client: Client, user: string) => {
     )
 }
 
+export const testBitsMessage = (client: Client, user: string, bits: string) => {
+    client.emit(
+        'cheer',
+        'duke_ferdinand',
+        { 'display-name': user, bits },
+        'test',
+    )
+}
+
 export const testGiftPackMessage = (client: Client) => {
     // @ts-ignore
     client.emit('submysterygift', 'duke_ferdinand', 'seasidefm', 20, {

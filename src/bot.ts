@@ -11,6 +11,8 @@ import { getCache } from './state/memoryCache.ts'
 import Queue from 'bull'
 import { matchStreamElementsTip } from './tips/streamelements.ts'
 import { onBitCheer } from './eventHandlers/onBitCheer.ts'
+import { JobType } from './eventHandlers/jobTypes.ts'
+import { DuckScaleJob, DuckWidenessJob } from './workers.ts'
 
 export const logger = getLogger('mariyai')
 
@@ -21,7 +23,7 @@ const CHANNELS = process.env.CHANNELS?.split(',') || []
 export class Bot {
     private readonly options: tmi.Options
     private client: tmi.Client | null = null
-    private jobQueue = new Queue('mariyai', process.env.REDIS_URL!)
+    private readonly jobQueue: Queue.Queue
 
     private readonly sockets: {
         [key: string]: ServerWebSocket
@@ -29,6 +31,15 @@ export class Bot {
 
     constructor() {
         const channels = CHANNELS
+
+        if (!Bun.env.REDIS_URL) {
+            throw new Error('REDIS_URL not set')
+        }
+
+        this.jobQueue = new Queue('mariyai', Bun.env.REDIS_URL)
+        this.jobQueue.on('error', (err) => {
+            logger.error('Queue error: ' + err)
+        })
 
         this.options = {
             connection: {
@@ -81,12 +92,14 @@ export class Bot {
                 )
 
                 const queue = this.getQueue()
-
-                await queue.add({
-                    action: 'TIP',
+                const job: DuckScaleJob = {
+                    action: JobType.Tip,
                     username: streamElementsTipData.username,
                     normalizedGiftWeight: streamElementsTipData.subEquivalency,
-                })
+                    subscriptionTier: 1,
+                }
+
+                await queue.add(job)
             }
 
             // Handle commands
@@ -112,24 +125,31 @@ export class Bot {
             client,
             async (username, normalizedGiftWeight, subscriptionTier) => {
                 const queue = this.getQueue()
-
-                await queue.add({
-                    action: 'GIFT_SUB',
+                const job: DuckScaleJob = {
+                    action: JobType.GiftSub,
                     username,
                     normalizedGiftWeight,
-                    subscriptionTier,
-                })
+                    subscriptionTier: subscriptionTier || 1,
+                }
+
+                await queue.add(job)
             },
         )
 
         onBitCheer(client, async (username, bitsInUSD) => {
+            logger.info(
+                `Bit cheer detected: ${username} cheered equivalent of $${bitsInUSD}`,
+            )
             const queue = this.getQueue()
-
-            await queue.add({
-                action: 'BIT_CHEER',
+            const job: DuckWidenessJob = {
+                action: JobType.BitCheer,
                 username,
-                normalizedGiftWeight: bitsInUSD,
-            })
+                bitsInUSD,
+            }
+
+            const res = await queue.add(job)
+
+            logger.info(`Job added to queue: ${res.id}`)
         })
 
         this.client = client
@@ -160,7 +180,7 @@ export class Bot {
     // Outbound messages
     // =====================
     public async sendMessage(channel: string, message: string) {
-        this.client?.say(channel, message)
+        await this.client!.say(channel, message)
     }
 
     public sendToSockets(message: Payload) {
@@ -187,6 +207,7 @@ export class Bot {
                 data: {
                     username: 'SeasideFM',
                     scale: JSON.parse(duckState).scale,
+                    wideness: JSON.parse(duckState).wideness,
                 },
             })
         }

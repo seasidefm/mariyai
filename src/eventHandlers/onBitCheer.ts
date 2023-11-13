@@ -8,13 +8,16 @@ type OnEvent = (username: string, bitsInUSD: number) => Promise<void> | void
 export function onBitCheer(client: Client, onEvent: OnEvent) {
     client.on('cheer', (channel, state, message) => {
         logger.info(
-            `#${channel}: ${state.username} cheered ${state.bits} bits!`,
+            `#${channel}: ${state['display-name']} cheered ${state.bits} bits!`,
         )
 
-        const bitsInUSD =
-            parseInt(state.bits?.replace(' Bits', '') || '0') / 100
+        // state.bits is a stringified number
+        const bitsInUSD = parseInt(state.bits || '0') / 100
 
         // Surface event to listeners
-        onEvent(state.username || 'Anonymous', bitsInUSD)
+        onEvent(
+            state['display-name'] || state.username || 'Anonymous',
+            bitsInUSD,
+        )
     })
 }

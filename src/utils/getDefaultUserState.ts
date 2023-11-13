@@ -28,11 +28,13 @@ export function getDefaultUserState(
 
     return username === 'SeasideFM' || username === 'Duke_Ferdinand'
         ? {
-              scale: username === 'SeasideFM' ? 5.0 : 2.5,
+              scale: username === 'SeasideFM' ? 5.0 : 1,
+              wideness: 0,
           }
         : {
               ...DefaultUserState,
               // Get subscriber tier
               scale: subTierToInitialScale(getSubTier(badges)),
+              wideness: 0,
           }
 }

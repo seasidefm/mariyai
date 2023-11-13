@@ -2,6 +2,7 @@ import tmi from 'tmi.js'
 import { type Bot, logger } from '../bot'
 import { Action } from '../actions/actionHandler'
 import {
+    testBitsMessage,
     testGiftMessage,
     testGiftPackMessage,
 } from '../eventHandlers/testEvents.ts'
@@ -16,6 +17,7 @@ enum Command {
 
     TestGift = '>test gift',
     TestGiftPack = '>test giftpack',
+    TestBits = '>test bits',
     // TestSubscription = ">test sub"
 }
 
@@ -96,7 +98,7 @@ export function commandMapGenerator(
                           (cachedState.scale > 1 ? cachedState.scale - 1 : 0)
                         : cachedState.scale
                 logger.info(
-                    `User ${username} has cached state, setting scale to ${calculatedScale}`,
+                    `User ${username} has cached state, setting scale to ${calculatedScale} + wideness to ${cachedState.wideness}`,
                 )
 
                 userState = {
@@ -104,6 +106,7 @@ export function commandMapGenerator(
                     // Scale up if cached state is smaller than current state (means user is higher tier sub),
                     // otherwise ignore since they'll be big enough
                     scale: calculatedScale < 1 ? 1 : calculatedScale, // one time the scale was 0, not sure why. this is a hacky fix
+                    wideness: cachedState.wideness || 0,
                 }
             }
 
@@ -113,6 +116,7 @@ export function commandMapGenerator(
                     username: args.user,
                     color: args.tags['color'] || '#FEFEFE',
                     scale: userState.scale,
+                    wideness: userState.wideness,
                 },
             })
 
@@ -197,6 +201,37 @@ export function commandMapGenerator(
                 }
             } else {
                 testGiftMessage(args.client, args.user)
+            }
+        },
+
+        [Command.TestBits]: async (args) => {
+            logger.info("Emitting fake 'bitcheer' event")
+            logger.info('MESSAGE HERE ' + args.message)
+            const commandArgs = args.message
+                .replace(Command.TestBits, '')
+                .trim()
+
+            if (commandArgs.length > 0) {
+                logger.info(`Detected command arguments: ${commandArgs}`)
+                try {
+                    const count = parseInt(commandArgs)
+
+                    if (isNaN(count)) {
+                        logger.error(`Invalid count argument: ${commandArgs}`)
+                        await bot.sendMessage(
+                            channel,
+                            `@${args.user} invalid count argument: ${commandArgs}`,
+                        )
+                        return
+                    }
+
+                    testBitsMessage(args.client, args.user, `${count}`)
+                } catch (e) {
+                    logger.error(`Error parsing command arguments: ${e}`)
+                    logger.error(
+                        'Is this actually someone calling with a number?',
+                    )
+                }
             }
         },
 

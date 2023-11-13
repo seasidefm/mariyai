@@ -24,6 +24,8 @@ export function matchStreamElementsTip(username: string, message: string) {
             username,
         }
     } else {
-        console.log('String does not match the pattern.')
+        console.log(
+            'StreamElements message does not match donation pattern. Ignoring!',
+        )
     }
 }
