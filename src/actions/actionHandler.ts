@@ -17,6 +17,7 @@ export enum Action {
     SetDuckSize = 'SET_DUCK_SIZE',
     Run = 'RUN',
     Quack = 'QUACK',
+    GetIt = 'GET_IT',
 }
 
 export type Payload =
@@ -72,6 +73,12 @@ export type Payload =
       }
     | {
           action: Action.Quack
+          data: {
+              username: string
+          }
+      }
+    | {
+          action: Action.GetIt
           data: {
               username: string
           }

@@ -16,6 +16,7 @@ enum Command {
     Jump = '!jump',
     Run = '!run',
     Quack = '!quack',
+    GetIt = '!getit',
 
     TestGift = '>test gift',
     TestGiftPack = '>test giftpack',
@@ -190,6 +191,28 @@ export function commandMapGenerator(
 
             bot.sendToSockets({
                 action: Action.Quack,
+                data: {
+                    username: args.user,
+                },
+            })
+        },
+
+        [Command.GetIt]: async (args) => {
+            // await bot.sendMessage(channel, `QUACK QUACK - @${args.user} is quacking!`);
+
+            const isSub = args.tags['subscriber']
+
+            if (!isSub) {
+                logger.info(`User ${args.user} is not a sub`)
+
+                return await bot.sendMessage(
+                    channel,
+                    `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`,
+                )
+            }
+
+            bot.sendToSockets({
+                action: Action.GetIt,
                 data: {
                     username: args.user,
                 },
