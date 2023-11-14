@@ -23,14 +23,14 @@ enum Command {
     // TestSubscription = ">test sub"
 }
 
+// Note: some features in here are secret Easter eggs, like quack
 const helpMsg = `
 MariyAI_Takeuchi commands (subs only):
 
 !grow: how to grow your duck |
 !spawn: spawn in a duck |
 !run: make your duck run around |
-!jump: make your duck jump |
-!quack: make your duck quack
+!jump: make your duck jump
 `
 
 const growMsg = `
