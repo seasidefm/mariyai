@@ -16,6 +16,7 @@ export enum Action {
     Jump = 'JUMP',
     SetDuckSize = 'SET_DUCK_SIZE',
     Run = 'RUN',
+    Quack = 'QUACK',
 }
 
 export type Payload =
@@ -65,6 +66,12 @@ export type Payload =
       }
     | {
           action: Action.Run
+          data: {
+              username: string
+          }
+      }
+    | {
+          action: Action.Quack
           data: {
               username: string
           }

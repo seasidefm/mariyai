@@ -11,9 +11,11 @@ import { getDefaultUserState } from '../utils/getDefaultUserState.ts'
 
 enum Command {
     Help = '!help',
+    Grow = '!grow',
     Spawn = '!spawn',
     Jump = '!jump',
     Run = '!run',
+    Quack = '!quack',
 
     TestGift = '>test gift',
     TestGiftPack = '>test giftpack',
@@ -24,9 +26,11 @@ enum Command {
 const helpMsg = `
 MariyAI_Takeuchi commands (subs only):
 
+!grow: how to grow your duck |
 !spawn: spawn in a duck |
 !run: make your duck run around |
-!jump: make your duck jump
+!jump: make your duck jump |
+!quack: make your duck quack
 `
 
 const growMsg = `
@@ -62,6 +66,10 @@ export function commandMapGenerator(
     return {
         [Command.Help]: async () => {
             await bot.sendMessage(channel, helpMsg)
+        },
+
+        [Command.Grow]: async () => {
+            await bot.sendMessage(channel, growMsg)
         },
 
         [Command.Spawn]: async (args) => {
@@ -128,7 +136,7 @@ export function commandMapGenerator(
             const isSub = args.tags['subscriber']
 
             if (!isSub) {
-                logger.info(`User ${args.user} is not a sub, not spawning duck`)
+                logger.info(`User ${args.user} is not a sub`)
 
                 return await bot.sendMessage(
                     channel,
@@ -150,7 +158,7 @@ export function commandMapGenerator(
             const isSub = args.tags['subscriber']
 
             if (!isSub) {
-                logger.info(`User ${args.user} is not a sub, not spawning duck`)
+                logger.info(`User ${args.user} is not a sub`)
 
                 return await bot.sendMessage(
                     channel,
@@ -160,6 +168,28 @@ export function commandMapGenerator(
 
             bot.sendToSockets({
                 action: Action.Run,
+                data: {
+                    username: args.user,
+                },
+            })
+        },
+
+        [Command.Quack]: async (args) => {
+            // await bot.sendMessage(channel, `QUACK QUACK - @${args.user} is quacking!`);
+
+            const isSub = args.tags['subscriber']
+
+            if (!isSub) {
+                logger.info(`User ${args.user} is not a sub`)
+
+                return await bot.sendMessage(
+                    channel,
+                    `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`,
+                )
+            }
+
+            bot.sendToSockets({
+                action: Action.Quack,
                 data: {
                     username: args.user,
                 },
