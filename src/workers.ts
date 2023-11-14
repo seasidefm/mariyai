@@ -73,21 +73,23 @@ export async function setupWorkers(bot: Bot) {
                         const initialState = await getState(username)
                         const state = {
                             ...initialState,
+                            width:
+                                initialState.wideness + 0.6 * (bitsInUSD / 5),
                         }
 
-                        const newWideness =
-                            initialState.wideness + 0.2 * (bitsInUSD / 5)
+                        // const newWideness =
+                        //     initialState.wideness + 0.4 * (bitsInUSD / 5)
+                        //
+                        // console.log(`New wideness: ${newWideness}`)
 
-                        console.log(`New wideness: ${newWideness}`)
-
-                        // Wideness can't be more than 5 - anything higher and it looks bad
-                        if (newWideness > 5) {
-                            // trim off the excess and add it to the scale instead
-                            state.scale += newWideness - 5
-                            state.wideness = 5
-                        } else {
-                            state.wideness = newWideness
-                        }
+                        // Wideness can't be more than 8 - anything higher and it looks bad
+                        // if (newWideness > 8) {
+                        //     // trim off the excess and add it to the scale instead
+                        //     state.scale += newWideness - 8
+                        //     state.wideness = 8
+                        // } else {
+                        //     state.wideness = newWideness
+                        // }
 
                         await sendState(bot, username, state)
 
