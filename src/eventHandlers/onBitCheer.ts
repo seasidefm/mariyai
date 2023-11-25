@@ -11,6 +11,8 @@ export function onBitCheer(client: Client, onEvent: OnEvent) {
             `#${channel}: ${state['display-name']} cheered ${state.bits} bits!`,
         )
 
+        console.log(state)
+
         // state.bits is a stringified number
         const bitsInUSD = parseInt(state.bits || '0') / 100
 

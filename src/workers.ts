@@ -71,10 +71,10 @@ export async function setupWorkers(bot: Bot) {
                         const { username, bitsInUSD } =
                             job.data as DuckWidenessJob
                         const initialState = await getState(username)
-                        const state = {
+                        const state: UserDuckState = {
                             ...initialState,
-                            width:
-                                initialState.wideness + 0.6 * (bitsInUSD / 5),
+                            wideness:
+                                initialState.wideness + 1.2 * (bitsInUSD / 5),
                         }
 
                         // const newWideness =
