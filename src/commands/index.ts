@@ -13,6 +13,7 @@ enum Command {
     Help = '!help',
     Grow = '!grow',
     Spawn = '!spawn',
+    Reset = '!reset',
     Jump = '!jump',
     Run = '!run',
     Quack = '!quack',
@@ -94,6 +95,9 @@ export function commandMapGenerator(
             // await bot.sendMessage(channel, `@${args.user} spawning a duck for you!`);
 
             const username = args.user
+            const isModerator =
+                args.tags.mod ||
+                username.toLowerCase() === args.currentChannel.toLowerCase()
 
             let userState = getDefaultUserState(username, args.tags['badges'])
 
@@ -123,6 +127,7 @@ export function commandMapGenerator(
                 action: Action.Spawn,
                 data: {
                     username: args.user,
+                    isModerator,
                     color: args.tags['color'] || '#FEFEFE',
                     scale: userState.scale,
                     wideness: userState.wideness,
@@ -131,6 +136,22 @@ export function commandMapGenerator(
 
             // update state in redis
             await cache.set(username, JSON.stringify(userState), 60 * 60 * 12)
+        },
+
+        [Command.Reset]: async (args) => {
+            const allowedUsers = ['duke_ferdinand', 'seasidefm']
+
+            if (
+                !allowedUsers.includes(args.user.toLowerCase()) &&
+                !args.tags.mod
+            ) {
+                return
+            }
+
+            logger.info(`Resetting all ducks!`)
+            bot.sendToSockets({
+                action: Action.Reset,
+            })
         },
 
         [Command.Jump]: async (args) => {

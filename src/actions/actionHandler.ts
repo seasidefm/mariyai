@@ -7,11 +7,13 @@ const bot = getBotInstance()
 
 export enum Action {
     FirstLoad = 'FIRST_LOAD',
+    Reset = 'RESET',
     Ping = 'PING',
     Pong = 'PONG',
 
     // Duck state
     GetState = 'GET_STATE',
+    FinalDuckCount = 'FINAL_DUCK_COUNT',
     Spawn = 'SPAWN',
     Jump = 'JUMP',
     SetDuckSize = 'SET_DUCK_SIZE',
@@ -26,6 +28,9 @@ export type Payload =
           data: {
               clientName: string
           }
+      }
+    | {
+          action: Action.Reset
       }
     | {
           action: Action.Ping
@@ -46,6 +51,7 @@ export type Payload =
           action: Action.Spawn
           data: {
               username: string
+              isModerator: boolean
               color: string
               scale: number // default 1
               wideness: number // default 0
