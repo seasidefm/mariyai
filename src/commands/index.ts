@@ -7,7 +7,7 @@ import {
     testGiftPackMessage,
 } from '../eventHandlers/testEvents.ts'
 import { getCache } from '../state/memoryCache.ts'
-import { getDefaultUserState } from '../utils/getDefaultUserState.ts'
+import { getUserState } from '../utils/getUserState.ts'
 
 enum Command {
     Help = '!help',
@@ -99,29 +99,10 @@ export function commandMapGenerator(
                 args.tags.mod ||
                 username.toLowerCase() === args.currentChannel.toLowerCase()
 
-            let userState = getDefaultUserState(username, args.tags['badges'])
-
-            const cached = await cache.get(username)
-            if (cached) {
-                const cachedState = JSON.parse(cached)
-
-                const calculatedScale =
-                    cachedState.scale < userState.scale
-                        ? userState.scale +
-                          (cachedState.scale > 1 ? cachedState.scale - 1 : 0)
-                        : cachedState.scale
-                logger.info(
-                    `User ${username} has cached state, setting scale to ${calculatedScale} + wideness to ${cachedState.wideness}`,
-                )
-
-                userState = {
-                    ...cachedState,
-                    // Scale up if cached state is smaller than current state (means user is higher tier sub),
-                    // otherwise ignore since they'll be big enough
-                    scale: calculatedScale < 1 ? 1 : calculatedScale, // one time the scale was 0, not sure why. this is a hacky fix
-                    wideness: cachedState.wideness || 0,
-                }
-            }
+            const { daily, weekly } = await getUserState(
+                username,
+                args.tags['badges'],
+            )
 
             bot.sendToSockets({
                 action: Action.Spawn,
@@ -129,13 +110,12 @@ export function commandMapGenerator(
                     username: args.user,
                     isModerator,
                     color: args.tags['color'] || '#FEFEFE',
-                    scale: userState.scale,
-                    wideness: userState.wideness,
+                    scale: daily.scale,
+                    wideness: daily.wideness,
+
+                    // TODO: calculate promotions based on weekly state
                 },
             })
-
-            // update state in redis
-            await cache.set(username, JSON.stringify(userState), 60 * 60 * 12)
         },
 
         [Command.Reset]: async (args) => {

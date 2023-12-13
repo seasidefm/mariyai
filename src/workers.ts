@@ -1,9 +1,10 @@
 import { getCache } from './state/memoryCache.ts'
-import { DefaultUserState, UserDuckState } from './state/stateTypes.ts'
+import { CombinedDuckState } from './state/stateTypes.ts'
 import { Action } from './actions/actionHandler.ts'
 import type { Bot } from './bot.ts'
 import { getLogger } from './logger.ts'
 import { JobType } from './eventHandlers/jobTypes.ts'
+import { getUserState } from './utils/getUserState.ts'
 
 const logger = getLogger('workers')
 
@@ -20,36 +21,29 @@ export type DuckWidenessJob = {
     bitsInUSD: number
 }
 
-async function getState(username: string) {
+async function sendState(
+    bot: Bot,
+    username: string,
+    { daily, weekly }: CombinedDuckState,
+) {
+    console.log('Sending state to sockets')
+    console.log({ daily, weekly })
     const cache = await getCache()
-    const userState = await cache.get(username)
-
-    let state: UserDuckState = DefaultUserState
-
-    // User state already exists, assume defaults are set correctly
-    if (userState) {
-        state = JSON.parse(userState)
-    }
-
-    return {
-        ...state,
-        scale: state.scale || 1.0,
-        wideness: state.wideness || 0, // some existing users don't have this field
-    }
-}
-
-async function sendState(bot: Bot, username: string, state: UserDuckState) {
-    const cache = await getCache()
-    logger.info('Setting state to: ' + JSON.stringify(state))
+    logger.info('Setting state to: ' + JSON.stringify({ daily, weekly }))
 
     // update state in redis
-    await cache.set(username, JSON.stringify(state), 60 * 60 * 12)
+    await cache.set(`daily:${username}`, JSON.stringify(daily), 60 * 60 * 12)
+    await cache.set(
+        `weekly:${username}`,
+        JSON.stringify(weekly),
+        60 * 60 * 24 * 7,
+    )
 
     bot.sendToSockets({
         action: Action.SetDuckSize,
         data: {
             username,
-            ...state,
+            ...daily,
         },
     })
 }
@@ -63,35 +57,28 @@ export async function setupWorkers(bot: Bot) {
         .process(async (job, done) => {
             logger.info('Processing job: ' + job.id)
             logger.debug('Job data: ' + JSON.stringify(job.data))
-            console.log('Job data: ' + JSON.stringify(job.data))
 
             switch (job.data.action) {
                 case JobType.BitCheer: {
                     try {
                         const { username, bitsInUSD } =
                             job.data as DuckWidenessJob
-                        const initialState = await getState(username)
-                        const state: UserDuckState = {
-                            ...initialState,
-                            wideness:
-                                initialState.wideness + 1.2 * (bitsInUSD / 5),
-                        }
+                        const { daily, weekly } = await getUserState(username)
 
-                        // const newWideness =
-                        //     initialState.wideness + 0.4 * (bitsInUSD / 5)
-                        //
-                        // console.log(`New wideness: ${newWideness}`)
+                        console.log('INSIDE WORKER', daily, weekly)
 
-                        // Wideness can't be more than 8 - anything higher and it looks bad
-                        // if (newWideness > 8) {
-                        //     // trim off the excess and add it to the scale instead
-                        //     state.scale += newWideness - 8
-                        //     state.wideness = 8
-                        // } else {
-                        //     state.wideness = newWideness
-                        // }
-
-                        await sendState(bot, username, state)
+                        await sendState(bot, username, {
+                            daily: {
+                                ...daily,
+                                wideness:
+                                    daily.wideness + 1.2 * (bitsInUSD / 5),
+                            },
+                            weekly: {
+                                ...weekly,
+                                donatedBits:
+                                    weekly.donatedBits + bitsInUSD * 100,
+                            },
+                        })
 
                         done()
                     } catch (err) {
@@ -107,12 +94,28 @@ export async function setupWorkers(bot: Bot) {
                     const { username, normalizedGiftWeight, subscriptionTier } =
                         job.data as DuckScaleJob
 
-                    const initialState = await getState(username)
+                    const { daily, weekly } = await getUserState(username)
+
+                    console.log(daily, weekly)
 
                     await sendState(bot, username, {
-                        ...initialState,
-                        // Scale by 0.2 per sub, increasing multiplier with sub tier/weight
-                        scale: initialState.scale + 0.2 * normalizedGiftWeight,
+                        daily: {
+                            ...daily,
+                            // Scale by 0.2 per sub, increasing multiplier with sub tier/weight
+                            scale: daily.scale + 0.2 * normalizedGiftWeight,
+                        },
+                        weekly: {
+                            ...weekly,
+                            tippedAmount:
+                                job.data.action === JobType.Tip
+                                    ? weekly.tippedAmount + normalizedGiftWeight
+                                    : weekly.tippedAmount,
+                            giftedSubs:
+                                job.data.action === JobType.GiftSub
+                                    ? weekly.giftedSubs + normalizedGiftWeight
+                                    : weekly.giftedSubs,
+                            donatedBits: weekly.donatedBits,
+                        },
                     })
                     done()
                     break

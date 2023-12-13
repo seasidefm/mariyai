@@ -1,6 +1,6 @@
 import { Client } from 'tmi.js'
 import { getLogger } from '../logger.ts'
-import { getSubTier } from '../utils/getDefaultUserState.ts'
+import { getSubTier } from '../utils/getUserState.ts'
 
 const logger = getLogger('gift-sub')
 
