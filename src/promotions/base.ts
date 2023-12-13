@@ -1,3 +1,5 @@
+import { CombinedDuckState, WeeklyDuckState } from '../state/stateTypes.ts'
+
 export enum RewardTier {
     Ineligible,
     Low,
@@ -36,6 +38,19 @@ export class BasePromo {
 
     public getActive() {
         return false
+    }
+
+    public getEligibleTiers(stats: WeeklyDuckState) {
+        const { donatedBits, giftedSubs, tippedAmount } = stats
+        const bitTier = this.getBitTierThreshold(donatedBits)
+        const subTier = this.getSubTierThreshold(giftedSubs)
+        const tipTier = this.getTipTierThreshold(tippedAmount)
+
+        return {
+            bits: bitTier,
+            subs: subTier,
+            tips: tipTier,
+        }
     }
 
     public getBitTierThreshold(bitsDonated: number) {

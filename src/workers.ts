@@ -5,6 +5,7 @@ import type { Bot } from './bot.ts'
 import { getLogger } from './logger.ts'
 import { JobType } from './eventHandlers/jobTypes.ts'
 import { getUserState } from './utils/getUserState.ts'
+import { getActivePromotions } from './promotions'
 
 const logger = getLogger('workers')
 
@@ -44,6 +45,12 @@ async function sendState(
         data: {
             username,
             ...daily,
+            // @ts-ignore
+            eligiblePromotions: getActivePromotions().reduce((acc, promo) => {
+                return {
+                    [promo.getPromo()]: promo.getEligibleTiers(weekly),
+                }
+            }, {}),
         },
     })
 }
@@ -64,8 +71,6 @@ export async function setupWorkers(bot: Bot) {
                         const { username, bitsInUSD } =
                             job.data as DuckWidenessJob
                         const { daily, weekly } = await getUserState(username)
-
-                        console.log('INSIDE WORKER', daily, weekly)
 
                         await sendState(bot, username, {
                             daily: {

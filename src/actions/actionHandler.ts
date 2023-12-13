@@ -55,6 +55,7 @@ export type Payload =
               color: string
               scale: number // default 1
               wideness: number // default 0
+              eligiblePromotions?: Record<string, number>[]
           }
       }
     | {
@@ -69,6 +70,7 @@ export type Payload =
               username: string
               scale: number
               wideness: number
+              eligiblePromotions?: Record<string, Record<string, number>>[]
           }
       }
     | {
