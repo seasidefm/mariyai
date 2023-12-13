@@ -1,4 +1,4 @@
-import { CombinedDuckState, WeeklyDuckState } from '../state/stateTypes.ts'
+import { WeeklyDuckState } from '../state/stateTypes.ts'
 
 export enum RewardTier {
     Ineligible,
@@ -10,8 +10,8 @@ export enum RewardTier {
 export class BasePromo {
     // Certain things happen at certain tiers for each promotion
     public bitTiers: Map<RewardTier, number> = new Map([
-        [RewardTier.Low, 1000],
-        [RewardTier.Medium, 2000],
+        [RewardTier.Low, 500],
+        [RewardTier.Medium, 1500],
         [RewardTier.High, 5000],
     ])
 
