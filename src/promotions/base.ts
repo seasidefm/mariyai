@@ -55,7 +55,8 @@ export class BasePromo {
 
     public getBitTierThreshold(bitsDonated: number) {
         let closestTier = RewardTier.Ineligible
-        for (const [tier, threshold] of this.bitTiers) {
+        // reversed to start with largest
+        for (const [tier, threshold] of [...this.bitTiers].reverse()) {
             if (bitsDonated >= threshold) {
                 closestTier = tier
                 break

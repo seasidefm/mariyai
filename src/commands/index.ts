@@ -8,6 +8,7 @@ import {
 } from '../eventHandlers/testEvents.ts'
 import { getCache } from '../state/memoryCache.ts'
 import { getUserState } from '../utils/getUserState.ts'
+import { getActivePromotions } from '../promotions'
 
 enum Command {
     Help = '!help',
@@ -112,8 +113,16 @@ export function commandMapGenerator(
                     color: args.tags['color'] || '#FEFEFE',
                     scale: daily.scale,
                     wideness: daily.wideness,
-
-                    // TODO: calculate promotions based on weekly state
+                    // @ts-ignore
+                    eligiblePromotions: getActivePromotions().reduce(
+                        (acc, promo) => {
+                            return {
+                                [promo.getPromo()]:
+                                    promo.getEligibleTiers(weekly),
+                            }
+                        },
+                        {},
+                    ),
                 },
             })
         },
