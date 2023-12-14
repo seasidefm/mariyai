@@ -1,4 +1,5 @@
 import {
+    CombinedDuckState,
     DefaultUserState,
     DefaultWeeklyState,
     UserDuckState,
@@ -31,10 +32,7 @@ const specialUsers = ['duke_ferdinand', 'oldfisheyes', 'tacodog40k']
 export async function getUserState(
     username: string,
     badges?: { subscriber?: string },
-): Promise<{
-    daily: UserDuckState
-    weekly: WeeklyDuckState
-}> {
+): Promise<CombinedDuckState> {
     console.log(`${username} has badges: ${JSON.stringify(badges)}`)
 
     const cache = await getCache()
@@ -48,6 +46,7 @@ export async function getUserState(
         cache.get(cacheKeys.weeklyState),
     ])
 
+    // Cached state! us this as a base
     if (cachedDaily && cachedWeekly) {
         const parsedDaily = JSON.parse(cachedDaily)
         const parsedWeekly = JSON.parse(cachedWeekly)
@@ -73,12 +72,17 @@ export async function getUserState(
         },
         weekly: DefaultWeeklyState,
     }
+
     if (username === 'SeasideFM') {
         return {
             ...state,
             daily: {
                 scale: 5.0,
                 wideness: 0,
+            },
+            weekly: {
+                ...state.weekly,
+                donatedBits: 200_000,
             },
         }
     }

@@ -68,7 +68,7 @@ export class BasePromo {
 
     public getSubTierThreshold(subMonths: number) {
         let closestTier = RewardTier.Ineligible
-        for (const [tier, threshold] of this.subTiers) {
+        for (const [tier, threshold] of [...this.subTiers].reverse()) {
             if (subMonths >= threshold) {
                 closestTier = tier
                 break
@@ -80,7 +80,7 @@ export class BasePromo {
 
     public getTipTierThreshold(tipAmount: number) {
         let closestTier = RewardTier.Ineligible
-        for (const [tier, threshold] of this.tipTiers) {
+        for (const [tier, threshold] of [...this.tipTiers].reverse()) {
             if (tipAmount >= threshold) {
                 closestTier = tier
                 break
