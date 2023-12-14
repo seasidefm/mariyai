@@ -46,25 +46,7 @@ export async function getUserState(
         cache.get(cacheKeys.weeklyState),
     ])
 
-    // Cached state! us this as a base
-    if (cachedDaily && cachedWeekly) {
-        const parsedDaily = JSON.parse(cachedDaily)
-        const parsedWeekly = JSON.parse(cachedWeekly)
-
-        return {
-            daily: {
-                ...DefaultUserState,
-                ...parsedDaily,
-            },
-            weekly: {
-                ...DefaultWeeklyState,
-                ...parsedWeekly,
-            },
-        }
-    }
-
-    // If no cached state, create a new one
-    const state = {
+    let state = {
         daily: {
             ...DefaultUserState,
             // Get subscriber tier
@@ -74,7 +56,7 @@ export async function getUserState(
     }
 
     if (username === 'SeasideFM') {
-        return {
+        state = {
             ...state,
             daily: {
                 scale: 5.0,
@@ -88,11 +70,28 @@ export async function getUserState(
     }
 
     if (specialUsers.includes(username.toLowerCase())) {
-        return {
+        state = {
             ...state,
             daily: {
                 scale: 2.5,
                 wideness: 0,
+            },
+        }
+    }
+
+    // Cached state! use this as a base if available
+    if (cachedDaily || cachedWeekly) {
+        const parsedDaily = JSON.parse(cachedDaily || '{}')
+        const parsedWeekly = JSON.parse(cachedWeekly || '{}')
+
+        state = {
+            daily: {
+                ...DefaultUserState,
+                ...parsedDaily,
+            },
+            weekly: {
+                ...DefaultWeeklyState,
+                ...parsedWeekly,
             },
         }
     }
