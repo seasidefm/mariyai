@@ -16,16 +16,17 @@ export class BasePromo {
     ])
 
     public subTiers: Map<RewardTier, number> = new Map([
-        [RewardTier.Low, 10],
-        [RewardTier.Medium, 20],
-        [RewardTier.High, 50],
+        [RewardTier.Low, 5],
+        [RewardTier.Medium, 10],
+        [RewardTier.High, 15],
     ])
 
+    // TODO: Convert these into sub equivalent values
     // This will usually correspond to the bit tiers
     public tipTiers: Map<RewardTier, number> = new Map([
-        [RewardTier.Low, 10],
-        [RewardTier.Medium, 20],
-        [RewardTier.High, 50],
+        [RewardTier.Low, 2],
+        [RewardTier.Medium, 4],
+        [RewardTier.High, 10],
     ])
 
     constructor() {
