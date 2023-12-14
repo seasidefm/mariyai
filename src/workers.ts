@@ -9,6 +9,8 @@ import { getActivePromotions } from './promotions'
 
 const logger = getLogger('workers')
 
+const MAX_DUCK_SCALE = 12.5
+
 export type DuckScaleJob = {
     action: JobType.GiftSub | JobType.Tip
     username: string
@@ -101,13 +103,24 @@ export async function setupWorkers(bot: Bot) {
 
                     const { daily, weekly } = await getUserState(username)
 
-                    console.log(daily, weekly)
+                    const calculatedScale =
+                        daily.scale + 0.2 * normalizedGiftWeight
 
                     await sendState(bot, username, {
                         daily: {
                             ...daily,
-                            // Scale by 0.2 per sub, increasing multiplier with sub tier/weight
-                            scale: daily.scale + 0.2 * normalizedGiftWeight,
+                            // Scale by 0.2 per sub, increasing multiplier with sub tier/weight until we reach max, then add excess to wideness
+                            scale:
+                                calculatedScale > MAX_DUCK_SCALE
+                                    ? MAX_DUCK_SCALE
+                                    : calculatedScale,
+                            wideness:
+                                calculatedScale > MAX_DUCK_SCALE
+                                    ? daily.wideness +
+                                      ((calculatedScale - MAX_DUCK_SCALE) /
+                                          0.2) *
+                                          1.2
+                                    : daily.wideness,
                         },
                         weekly: {
                             ...weekly,
