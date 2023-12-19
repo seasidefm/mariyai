@@ -86,17 +86,15 @@ export async function getUserState(
 
         state = {
             daily: {
-                ...DefaultUserState,
+                ...state.daily,
                 ...parsedDaily,
             },
             weekly: {
-                ...DefaultWeeklyState,
+                ...state.weekly,
                 ...parsedWeekly,
             },
         }
     }
 
-    return {
-        ...state,
-    }
+    return state
 }
