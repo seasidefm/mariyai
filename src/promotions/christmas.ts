@@ -11,6 +11,6 @@ export class ChristmasPromo extends BasePromo {
         const month = now.getMonth()
         const day = now.getDate()
 
-        return month === 11 && day < 26
+        return month === 11
     }
 }
