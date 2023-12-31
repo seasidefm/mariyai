@@ -16,6 +16,7 @@ export enum Action {
     FinalDuckCount = 'FINAL_DUCK_COUNT',
     Spawn = 'SPAWN',
     Jump = 'JUMP',
+    SpaceJump = 'SPACEJUMP',
     SetDuckSize = 'SET_DUCK_SIZE',
     Run = 'RUN',
     Quack = 'QUACK',
@@ -60,6 +61,12 @@ export type Payload =
       }
     | {
           action: Action.Jump
+          data: {
+              username: string
+          }
+      }
+    | {
+          action: Action.SpaceJump
           data: {
               username: string
           }

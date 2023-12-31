@@ -16,6 +16,7 @@ enum Command {
     Spawn = '!spawn',
     Reset = '!reset',
     Jump = '!jump',
+    SpaceJump = '!spacejump',
     Run = '!run',
     Quack = '!quack',
     GetIt = '!getit',
@@ -157,6 +158,26 @@ export function commandMapGenerator(
 
             bot.sendToSockets({
                 action: Action.Jump,
+                data: {
+                    username: args.user,
+                },
+            })
+        },
+
+        [Command.SpaceJump]: async (args) => {
+            const isSub = args.tags['subscriber']
+
+            if (!isSub) {
+                logger.info(`User ${args.user} is not a sub`)
+
+                return await bot.sendMessage(
+                    channel,
+                    `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`,
+                )
+            }
+
+            bot.sendToSockets({
+                action: Action.SpaceJump,
                 data: {
                     username: args.user,
                 },
