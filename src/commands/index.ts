@@ -15,6 +15,8 @@ enum Command {
     Grow = '!grow',
     Spawn = '!spawn',
     Reset = '!reset',
+    Jazz = '!jazz',
+    JazzOff = '!jazzoff',
     Jump = '!jump',
     SpaceJump = '!spacejump',
     Run = '!run',
@@ -52,9 +54,25 @@ export type CommandHandler<R = void> = (args: {
     tags: tmi.ChatUserstate
 }) => Promise<R>
 
+function isModerator(args: {
+    tags: tmi.ChatUserstate
+    currentChannel: string
+    user: string
+}): boolean {
+    return (
+        args.tags.mod ||
+        args.currentChannel.toLowerCase().includes(args.user.toLowerCase())
+    )
+}
+
 const commands = Object.values(Command)
 export function messageCommandParser(message: string): Command | null {
-    const command = commands.find((cmd) => message.startsWith(cmd))
+    // Get the first string up to the first space or the end of the string
+    const commandMatch = message.split(' ')[0]
+
+    const command = commands.find((cmd) => cmd === commandMatch)
+
+    logger.info(`Command: ${command}`)
 
     if (command) {
         return command
@@ -141,6 +159,26 @@ export function commandMapGenerator(
             logger.info(`Resetting all ducks!`)
             bot.sendToSockets({
                 action: Action.Reset,
+            })
+        },
+
+        [Command.Jazz]: async (args) => {
+            bot.sendToSockets({
+                action: Action.Jazz,
+                data: {
+                    username: args.user,
+                    shouldJazz: true,
+                },
+            })
+        },
+
+        [Command.JazzOff]: async (args) => {
+            bot.sendToSockets({
+                action: Action.Jazz,
+                data: {
+                    username: args.user,
+                    shouldJazz: false,
+                },
             })
         },
 

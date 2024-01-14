@@ -10,6 +10,7 @@ export enum Action {
     Reset = 'RESET',
     Ping = 'PING',
     Pong = 'PONG',
+    Jazz = 'JAZZ',
 
     // Duck state
     GetState = 'GET_STATE',
@@ -57,6 +58,13 @@ export type Payload =
               scale: number // default 1
               wideness: number // default 0
               eligiblePromotions?: Record<string, number>[]
+          }
+      }
+    | {
+          action: Action.Jazz
+          data: {
+              username: string
+              shouldJazz: boolean
           }
       }
     | {
@@ -108,6 +116,7 @@ export async function actionHandler(
 
         switch (data.action) {
             case Action.FirstLoad: {
+                logger.info(`client connected: ${data.action}`)
                 bot.addSocket(data.data.clientName, _ws as ServerWebSocket)
 
                 break
