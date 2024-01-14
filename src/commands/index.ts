@@ -169,17 +169,6 @@ export function commandMapGenerator(
         },
 
         [Command.Jump]: async (args) => {
-            const isSub = args.tags['subscriber']
-
-            if (!isSub) {
-                logger.info(`User ${args.user} is not a sub`)
-
-                return await bot.sendMessage(
-                    channel,
-                    `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`,
-                )
-            }
-
             bot.sendToSockets({
                 action: Action.Jump,
                 data: {
