@@ -20,6 +20,7 @@ export enum Action {
     SpaceJump = 'SPACEJUMP',
     SetDuckSize = 'SET_DUCK_SIZE',
     Run = 'RUN',
+    Spin = 'SPIN',
     Quack = 'QUACK',
     GetIt = 'GET_IT',
 }
@@ -69,6 +70,12 @@ export type Payload =
       }
     | {
           action: Action.Jump
+          data: {
+              username: string
+          }
+      }
+    | {
+          action: Action.Spin
           data: {
               username: string
           }

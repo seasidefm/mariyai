@@ -188,7 +188,14 @@ export function commandMapGenerator(
             })
         },
 
-        [Command.Spin]: async (args) => {},
+        [Command.Spin]: async (args) => {
+            bot.sendToSockets({
+                action: Action.Spin,
+                data: {
+                    username: args.user,
+                },
+            })
+        },
 
         [Command.SpaceJump]: async (args) => {
             bot.sendToSockets({
