@@ -19,6 +19,7 @@ enum Command {
     JazzOff = '!jazzoff',
     Jump = '!jump',
     SpaceJump = '!spacejump',
+    Spin = '!spin',
     Run = '!run',
     Quack = '!quack',
     GetIt = '!getit',
@@ -95,24 +96,9 @@ export function commandMapGenerator(
         },
 
         [Command.Spawn]: async (args) => {
-            // check if user is subbed
-            const isSub = args.tags['subscriber']
-
-            if (!isSub) {
-                logger.info(`User ${args.user} is not a sub, not spawning duck`)
-
-                return await bot.sendMessage(
-                    channel,
-                    `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`,
-                )
-            }
-
-            const cache = await getCache()
             logger.info(
                 `Spawning a duck with specs: ${args.user}, ${args.tags['color']}`,
             )
-
-            // await bot.sendMessage(channel, `@${args.user} spawning a duck for you!`);
 
             const username = args.user
             const isModerator =
@@ -202,18 +188,9 @@ export function commandMapGenerator(
             })
         },
 
+        [Command.Spin]: async (args) => {},
+
         [Command.SpaceJump]: async (args) => {
-            const isSub = args.tags['subscriber']
-
-            if (!isSub) {
-                logger.info(`User ${args.user} is not a sub`)
-
-                return await bot.sendMessage(
-                    channel,
-                    `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`,
-                )
-            }
-
             bot.sendToSockets({
                 action: Action.SpaceJump,
                 data: {
@@ -223,19 +200,6 @@ export function commandMapGenerator(
         },
 
         [Command.Run]: async (args) => {
-            // await bot.sendMessage(channel, `ZOOOOM - Look at @${args.user} go!`);
-
-            const isSub = args.tags['subscriber']
-
-            if (!isSub) {
-                logger.info(`User ${args.user} is not a sub`)
-
-                return await bot.sendMessage(
-                    channel,
-                    `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`,
-                )
-            }
-
             bot.sendToSockets({
                 action: Action.Run,
                 data: {
@@ -245,18 +209,10 @@ export function commandMapGenerator(
         },
 
         [Command.Quack]: async (args) => {
-            // await bot.sendMessage(channel, `QUACK QUACK - @${args.user} is quacking!`);
-
-            const isSub = args.tags['subscriber']
-
-            if (!isSub) {
-                logger.info(`User ${args.user} is not a sub`)
-
-                return await bot.sendMessage(
-                    channel,
-                    `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`,
-                )
-            }
+            await bot.sendMessage(
+                channel,
+                `QUACK QUACK - @${args.user} is quacking!`,
+            )
 
             bot.sendToSockets({
                 action: Action.Quack,
@@ -268,17 +224,6 @@ export function commandMapGenerator(
 
         [Command.GetIt]: async (args) => {
             // await bot.sendMessage(channel, `QUACK QUACK - @${args.user} is quacking!`);
-
-            const isSub = args.tags['subscriber']
-
-            if (!isSub) {
-                logger.info(`User ${args.user} is not a sub`)
-
-                return await bot.sendMessage(
-                    channel,
-                    `@${args.user}, due to development time and effort, Duck Resort is subscriber only!`,
-                )
-            }
 
             bot.sendToSockets({
                 action: Action.GetIt,

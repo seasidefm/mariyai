@@ -71,8 +71,15 @@ export class Bot {
 
         const client = new tmi.Client(this.options)
 
-        client.on('connected', () => {
+        client.on('connected', async () => {
             logger.info('MariyAI_Takeuchi connected to twitch')
+
+            for (const channel of CHANNELS) {
+                await client.say(
+                    `#${channel}`,
+                    `MariyAI_Takeuchi v${process.env.npm_package_version} is online!`,
+                )
+            }
         })
 
         client.on('message', async (channel, tags, message, isSelf) => {
@@ -109,6 +116,19 @@ export class Bot {
                         tags['display-name']
                     } - ${message}`,
                 )
+
+                const isSub = tags['subscriber']
+
+                if (!isSub) {
+                    logger.info(
+                        `User ${tags['display-name']} is not a sub, not executing command`,
+                    )
+
+                    return bot?.sendMessage(
+                        channel,
+                        `@${tags.username}, due to development time and effort, Duck Resort is subscriber only.`,
+                    )
+                }
 
                 await commandMap[command]({
                     client,
