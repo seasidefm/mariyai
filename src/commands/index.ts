@@ -69,7 +69,11 @@ function isModerator(args: {
 const commands = Object.values(Command)
 export function messageCommandParser(message: string): Command | null {
     // Get the first string up to the first space or the end of the string
-    const commandMatch = message.split(' ')[0]
+    const commandMatch = message.startsWith('>')
+        ? message.split(' ')[0] + ' ' + message.split(' ')[1]
+        : message.split(' ')[0]
+
+    console.log(`Command match: ${commandMatch}`)
 
     const command = commands.find((cmd) => cmd === commandMatch)
 
