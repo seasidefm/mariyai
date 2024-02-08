@@ -124,10 +124,10 @@ export class Bot {
                         `User ${tags['display-name']} is not a sub, not executing command`,
                     )
 
-                    // return bot?.sendMessage(
-                    //     channel,
-                    //     `@${tags.username}, due to development time and effort, Duck Resort is subscriber only.`,
-                    // )
+                    return bot?.sendMessage(
+                        channel,
+                        `@${tags.username}, due to development time and effort, Duck Resort is subscriber only.`,
+                    )
                 }
 
                 await commandMap[command]({
