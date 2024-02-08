@@ -10,6 +10,8 @@ import { getActivePromotions } from './promotions'
 const logger = getLogger('workers')
 
 const MAX_DUCK_SCALE = 12.5
+const BIT_WIDNESS_SCALE_INCREASE = 3
+const GIFT_SCALE_INCREASE = 1
 
 export type DuckScaleJob = {
     action: JobType.GiftSub | JobType.Tip
@@ -78,7 +80,7 @@ export async function setupWorkers(bot: Bot) {
                             daily: {
                                 ...daily,
                                 wideness:
-                                    daily.wideness + 1.2 * (bitsInUSD / 5),
+                                    daily.wideness + BIT_WIDNESS_SCALE_INCREASE * (bitsInUSD / 5),
                             },
                             weekly: {
                                 ...weekly,
@@ -104,12 +106,12 @@ export async function setupWorkers(bot: Bot) {
                     const { daily, weekly } = await getUserState(username)
 
                     const calculatedScale =
-                        daily.scale + 0.2 * normalizedGiftWeight
+                        daily.scale + GIFT_SCALE_INCREASE * normalizedGiftWeight
 
                     await sendState(bot, username, {
                         daily: {
                             ...daily,
-                            // Scale by 0.2 per sub, increasing multiplier with sub tier/weight until we reach max, then add excess to wideness
+                            // Scale by GIFT_SCALE_INCREASE per sub, increasing multiplier with sub tier/weight until we reach max, then add excess to wideness
                             scale:
                                 calculatedScale > MAX_DUCK_SCALE
                                     ? MAX_DUCK_SCALE
@@ -118,8 +120,8 @@ export async function setupWorkers(bot: Bot) {
                                 calculatedScale > MAX_DUCK_SCALE
                                     ? daily.wideness +
                                       ((calculatedScale - MAX_DUCK_SCALE) /
-                                          0.2) *
-                                          1.2
+                                          GIFT_SCALE_INCREASE) *
+                                          BIT_WIDNESS_SCALE_INCREASE
                                     : daily.wideness,
                         },
                         weekly: {
