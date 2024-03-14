@@ -11,7 +11,7 @@ const logger = getLogger('workers')
 
 const MAX_DUCK_SCALE = 12.5
 const BIT_WIDNESS_SCALE_INCREASE = 3
-const GIFT_SCALE_INCREASE = 1
+const GIFT_SCALE_INCREASE = 0.5
 
 export type DuckScaleJob = {
     action: JobType.GiftSub | JobType.Tip
@@ -80,7 +80,9 @@ export async function setupWorkers(bot: Bot) {
                             daily: {
                                 ...daily,
                                 wideness:
-                                    daily.wideness + BIT_WIDNESS_SCALE_INCREASE * (bitsInUSD / 5),
+                                    daily.wideness +
+                                    BIT_WIDNESS_SCALE_INCREASE *
+                                        (bitsInUSD / 5),
                             },
                             weekly: {
                                 ...weekly,
