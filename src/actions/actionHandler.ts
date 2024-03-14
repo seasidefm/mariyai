@@ -16,6 +16,7 @@ export enum Action {
     GetState = 'GET_STATE',
     FinalDuckCount = 'FINAL_DUCK_COUNT',
     Spawn = 'SPAWN',
+    BotSpawn = 'SPAWN',
     Jump = 'JUMP',
     SpaceJump = 'SPACEJUMP',
     SetDuckSize = 'SET_DUCK_SIZE',
@@ -51,7 +52,7 @@ export type Payload =
           action: Action.GetState
       }
     | {
-          action: Action.Spawn
+          action: Action.Spawn | Action.BotSpawn
           data: {
               username: string
               isModerator: boolean

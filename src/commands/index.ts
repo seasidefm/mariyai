@@ -14,6 +14,7 @@ enum Command {
     Help = '!help',
     Grow = '!grow',
     Spawn = '!spawn',
+    BotSpawn = '!botspawn',
     Reset = '!reset',
     Jazz = '!jazz',
     JazzOff = '!jazzoff',
@@ -134,6 +135,25 @@ export function commandMapGenerator(
                     ),
                 },
             })
+        },
+
+        [Command.BotSpawn]: async (args) => {
+            const bots = ['MariyAI_Takeuchi', 'Botsuro_Yamashita']
+
+            for (const robot of bots) {
+                bot.sendToSockets({
+                    action: Action.Spawn,
+                    data: {
+                        username: robot,
+                        isModerator: true,
+                        color: '#226289',
+                        scale: 1,
+                        wideness: 2,
+                        // @ts-ignore
+                        eligiblePromotions: {},
+                    },
+                })
+            }
         },
 
         [Command.Reset]: async (args) => {
