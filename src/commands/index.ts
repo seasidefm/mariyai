@@ -6,7 +6,6 @@ import {
     testGiftMessage,
     testGiftPackMessage,
 } from '../eventHandlers/testEvents.ts'
-import { getCache } from '../state/memoryCache.ts'
 import { getUserState } from '../utils/getUserState.ts'
 import { getActivePromotions } from '../promotions'
 
@@ -22,6 +21,7 @@ enum Command {
     SpaceJump = '!spacejump',
     Spin = '!spin',
     Run = '!run',
+    Glitch = '!glitch',
     Quack = '!quack',
     GetIt = '!getit',
 
@@ -137,7 +137,7 @@ export function commandMapGenerator(
             })
         },
 
-        [Command.BotSpawn]: async (args) => {
+        [Command.BotSpawn]: async (_) => {
             const bots = ['MariyAI_Takeuchi', 'Botsuro_Yamashita']
 
             for (const robot of bots) {
@@ -222,6 +222,15 @@ export function commandMapGenerator(
         [Command.Run]: async (args) => {
             bot.sendToSockets({
                 action: Action.Run,
+                data: {
+                    username: args.user,
+                },
+            })
+        },
+
+        [Command.Glitch]: async (args) => {
+            bot.sendToSockets({
+                action: Action.Glitch,
                 data: {
                     username: args.user,
                 },

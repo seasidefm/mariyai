@@ -24,6 +24,7 @@ export enum Action {
     Spin = 'SPIN',
     Quack = 'QUACK',
     GetIt = 'GET_IT',
+    Glitch = 'GLITCH',
 }
 
 export type Payload =
@@ -110,6 +111,12 @@ export type Payload =
       }
     | {
           action: Action.GetIt
+          data: {
+              username: string
+          }
+      }
+    | {
+          action: Action.Glitch
           data: {
               username: string
           }
